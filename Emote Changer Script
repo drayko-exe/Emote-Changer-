@@ -1,85 +1,112 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Editor de Emotes",
-   LoadingTitle = "Carregando Modificações...",
-   LoadingSubtitle = "by drayko", -- Crédito alterado aqui
+   Name = "Menu de Modificações | made by @drayko.exe",
+   LoadingTitle = "Carregando scripts...",
+   LoadingSubtitle = "made by drayko >_<",
    ConfigurationSaving = {
       Enabled = false
    }
 })
 
 -- ==========================================
--- ABA PRINCIPAL (EMOTES)
+-- VARIÁVEIS DAS PLATAFORMAS
 -- ==========================================
-local Tab = Window:CreateTab("Principal", 4483362458)
+local UserInputService = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local platAtiva = false
+local modoVisivel = false
+local ultimaPlataforma = nil
+local tamanhoMapa = 500
+local tamanhoParte = 8
+local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
+pastaPlataformas.Name = "PlataformasInvisiveis"
 
-Tab:CreateSection("Customização de Nomes")
+-- ==========================================
+-- FUNÇÕES DAS PLATAFORMAS
+-- ==========================================
+local function atualizarVisual()
+    for _, parte in pairs(pastaPlataformas:GetChildren()) do
+        parte.Transparency = modoVisivel and 0.3 or 1
+        parte.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
+    end
+end
+
+local function criarMapa()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local root = character:WaitForChild("HumanoidRootPart")
+    local altura = root.Position.Y - 3
+
+    for x = -tamanhoMapa, tamanhoMapa, tamanhoParte do
+        for z = -tamanhoMapa, tamanhoMapa, tamanhoParte do
+            local parte = Instance.new("Part")
+            parte.Size = Vector3.new(tamanhoParte, 1, tamanhoParte)
+            parte.Position = Vector3.new(x, altura, z)
+            parte.Anchored = true
+            parte.CanCollide = true
+            parte.Transparency = modoVisivel and 0.3 or 1
+            parte.Parent = pastaPlataformas
+            ultimaPlataforma = parte
+        end
+    end
+end
+
+-- ==========================================
+-- ABA PRINCIPAL (EMOTES & PLATAFORMAS)
+-- ==========================================
+local Tab = Window:CreateTab("Scripts", 4483362458)
+
+Tab:CreateSection("Emotes")
 
 Tab:CreateToggle({
-   Name = "Ativar Nomes Customizados",
+   Name = "Renomear Emotes",
    CurrentValue = false,
    Flag = "EmoteToggle",
    Callback = function(Value)
       local Emotes = game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Emotes")
-      
       if Value then
-         -- ATIVAR: Muda para os nomes que você pediu
          if Emotes:FindFirstChild("WerewolfHowl") then Emotes.WerewolfHowl.Name = "GoofyStride" end
          if Emotes:FindFirstChild("Griddy") then Emotes.Griddy.Name = "BumperKart" end
          if Emotes:FindFirstChild("SkateboardStroll") then Emotes.SkateboardStroll.Name = "Nostalgia" end
-         
-         Rayfield:Notify({
-            Title = "Emotes Ativados",
-            Content = "Os nomes foram alterados por drayko!",
-            Duration = 3,
-            Image = 4483362458,
-         })
       else
-         -- DESATIVAR: Retorna aos nomes originais do jogo
          if Emotes:FindFirstChild("GoofyStride") then Emotes.GoofyStride.Name = "WerewolfHowl" end
          if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Griddy" end
          if Emotes:FindFirstChild("Nostalgia") then Emotes.Nostalgia.Name = "SkateboardStroll" end
-         
-         Rayfield:Notify({
-            Title = "Emotes Restaurados",
-            Content = "Os nomes voltaram ao padrão original.",
-            Duration = 3,
-            Image = 4483362458,
-         })
       end
    end,
 })
 
+Tab:CreateSection("Plataformas")
+
+Tab:CreateToggle({
+   Name = "Habilitar Teclas (E, Y, U)",
+   CurrentValue = false,
+   Flag = "PlatToggle",
+   Callback = function(Value)
+      platAtiva = Value
+      if not Value then pastaPlataformas:ClearAllChildren() end
+   end,
+})
+
+Tab:CreateLabel("E = Spawn | Y = Visível | U = TP Fim")
+
 -- ==========================================
--- ABA SOCIAL (DISCORD & LINKS)
+-- ABA SOCIAL
 -- ==========================================
 local SocialTab = Window:CreateTab("Social", 4483362458)
 
-SocialTab:CreateSection("Comunidade by drayko")
+SocialTab:CreateSection("by drayko")
 
 SocialTab:CreateButton({
-   Name = "Copiar Convite do Discord",
+   Name = "Copiar Discord",
    Callback = function()
-      setclipboard("https://discord.gg/SEU_CONVITE_AQUI") -- Não esqueça de colocar seu link real!
-      Rayfield:Notify({
-         Title = "Discord",
-         Content = "Link do drayko copiado!",
-         Duration = 3
-      })
+      setclipboard("https://discord.gg/SEU_LINK")
+      Rayfield:Notify({Title = "Sucesso", Content = "Link copiado!", Duration = 2})
    end,
 })
 
-SocialTab:CreateButton({
-   Name = "YouTube / Outras Redes",
-   Callback = function()
-      setclipboard("https://youtube.com/@SEU_CANAL") -- Coloque seu link aqui
-      Rayfield:Notify({
-         Title = "Redes Sociais",
-         Content = "Link copiado com sucesso!",
-         Duration = 3
-      })
-   end,
-})
-
-Rayfield:LoadConfiguration()
+-- ==========================================
+-- LÓGICA DE INPUT (TECLAS)
+-- ==========================================
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or not platAtiva
