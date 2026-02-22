@@ -29,7 +29,7 @@ local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or In
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÕES DE SHADERS (BY DRAYKO.EXE)
+-- FUNÇÕES DE SHADERS (RAINBOW EDITION)
 -- ==========================================
 local function processObject(obj)
     if not shadersAtivos then return end
@@ -43,22 +43,35 @@ end
 
 local function applyLighting()
     if not shadersAtivos then return end
+    
+    -- Configurações de Tecnologia e Brilho
     Lighting.Technology = Enum.Technology.Future
     Lighting.Brightness = 2.2
     Lighting.GlobalShadows = true
     Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
     
-    if not Lighting:FindFirstChild("DraykoSky") then
+    -- Aplica o Rainbow Skybox (ID: 16573649975)
+    if not Lighting:FindFirstChild("DraykoRainbowSky") then
+        -- Remove qualquer Skybox anterior
+        for _, oldSky in pairs(Lighting:GetChildren()) do
+            if oldSky:IsA("Sky") then oldSky:Destroy() end
+        end
+        
         local sky = Instance.new("Sky")
-        sky.Name = "DraykoSky"
-        sky.SkyboxUp = "rbxassetid://159067921"
+        sky.Name = "DraykoRainbowSky"
+        sky.SkyboxBk = "rbxassetid://16573649931"
+        sky.SkyboxDn = "rbxassetid://16573649940"
+        sky.SkyboxFt = "rbxassetid://16573649952"
+        sky.SkyboxLf = "rbxassetid://16573649960"
+        sky.SkyboxRt = "rbxassetid://16573649964"
+        sky.SkyboxUp = "rbxassetid://16573649970"
         sky.SunAngularSize = 0
         sky.Parent = Lighting
     end
 end
 
 -- ==========================================
--- ABA SCRIPTS (EMOTES, PLATAFORMAS, SHADERS)
+-- ABA SCRIPTS (VISUAL, EMOTES, PLATAFORMAS)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
@@ -74,11 +87,11 @@ Tab:CreateToggle({
          applyLighting()
          for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end
          shaderConnection = Workspace.DescendantAdded:Connect(processObject)
-         Rayfield:Notify({Title = "Shaders", Content = "Efeitos aplicados por drayko.exe!", Duration = 3})
+         Rayfield:Notify({Title = "Shaders", Content = "Rainbow Shaders aplicados por drayko.exe!", Duration = 3})
       else
          if shaderConnection then shaderConnection:Disconnect() end
          Lighting.Brightness = 1 
-         if Lighting:FindFirstChild("DraykoSky") then Lighting.DraykoSky:Destroy() end
+         if Lighting:FindFirstChild("DraykoRainbowSky") then Lighting.DraykoRainbowSky:Destroy() end
          Rayfield:Notify({Title = "Shaders", Content = "Shaders desativados.", Duration = 3})
       end
    end,
@@ -140,7 +153,7 @@ SocialTab:CreateButton({
 })
 
 -- ==========================================
--- LÓGICA DE INPUT
+-- LÓGICA DE INPUT (PLATAFORMAS)
 -- ==========================================
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not platAtiva then return end
@@ -152,7 +165,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             local character = player.Character
             if character then
                 local root = character:WaitForChild("HumanoidRootPart")
-                for x = -500, 500, 16 do -- Aumentei o espaçamento para evitar lag em mapas grandes
+                for x = -500, 500, 16 do
                     for z = -500, 500, 16 do
                         local p = Instance.new("Part")
                         p.Size = Vector3.new(16, 1, 16)
