@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "Menu de Modificações | @drayko.exe",
    LoadingTitle = "Carregando script...",
-   LoadingSubtitle = "made by drayko >_<",
+   LoadingSubtitle = "made by drayko",
    ConfigurationSaving = {
       Enabled = false
    }
