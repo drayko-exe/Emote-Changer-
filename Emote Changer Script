@@ -1,6 +1,6 @@
--- Limite de FPS estável para evitar congelamentos
+-- Desbloqueio de FPS
 if setfpscap then
-    setfpscap(240)
+    setfpscap(9999)
 end
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -26,7 +26,6 @@ local player = Players.LocalPlayer
 local bhopAtivo = false
 local platAtiva = false
 local modoVisivel = false
-local emotesLoop = false 
 local ultimaPlataforma = nil
 local LastJump = 0
 local JUMP_COOLDOWN = 0.15
@@ -35,33 +34,22 @@ local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or In
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÕES DE SUPORTE OTIMIZADAS
+-- FUNÇÕES DE SUPORTE
 -- ==========================================
 
-local function ForceRename(oldName, newName)
+-- Busca profunda para renomear itens
+local function AdvancedRename(oldName, newName)
+    local encontrado = false
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
         if item.Name == oldName then
             item.Name = newName
+            encontrado = true
         end
     end
+    return encontrado
 end
 
--- Loop otimizado para os emotes
-task.spawn(function()
-    while true do
-        task.wait(5) 
-        if emotesLoop then
-            pcall(function()
-                ForceRename("WerewolfHowl", "GoofyStride")
-                ForceRename("Broom", "BumperKart")
-                ForceRename("SkateboardStroll", "Nostalgia")
-                ForceRename("RockinStride", "Stride")
-                ForceRename("ZombieStride", "Catjam")
-            end)
-        end
-    end
-end)
-
+-- Verificação de chão para o Bhop
 local function IsOnGround(Character, HRP, Humanoid)
     if not Character or not HRP or not Humanoid then return false end
     local state = Humanoid:GetState()
@@ -75,7 +63,7 @@ local function IsOnGround(Character, HRP, Humanoid)
 end
 
 -- ==========================================
--- ABA: SCRIPTS
+-- ABA: SCRIPTS (Visuais e Movimentação)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
@@ -116,27 +104,34 @@ Tab:CreateToggle({
 Tab:CreateSection("Emotes")
 
 Tab:CreateToggle({
-   Name = "Renomear Emotes (Auto)",
+   Name = "Renomear Emotes",
    CurrentValue = false,
    Flag = "EmoteToggle",
    Callback = function(Value)
-      emotesLoop = Value
       if Value then
-         Rayfield:Notify({Title = "Emotes", Content = "Monitorização ativa!", Duration = 2})
+         AdvancedRename("WerewolfHowl", "GoofyStride")
+         AdvancedRename("Broom", "BumperKart")
+         AdvancedRename("SkateboardStroll", "Nostalgia")
+         AdvancedRename("RockinStride", "Stride")
+         AdvancedRename("ZombieStride", "Catjam")
+         Rayfield:Notify({Title = "Emotes", Content = "Nomes atualizados!", Duration = 2})
       else
-         ForceRename("GoofyStride", "WerewolfHowl")
-         ForceRename("BumperKart", "Broom")
-         ForceRename("Nostalgia", "SkateboardStroll")
-         ForceRename("Stride", "RockinStride")
-         ForceRename("Catjam", "ZombieStride")
+         AdvancedRename("GoofyStride", "WerewolfHowl")
+         AdvancedRename("BumperKart", "Broom")
+         AdvancedRename("Nostalgia", "SkateboardStroll")
+         AdvancedRename("Stride", "RockinStride")
+         AdvancedRename("Catjam", "ZombieStride")
+         Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
       end
    end,
 })
 
 -- ==========================================
--- ABA: MAPA
+-- ABA: MAPA (Brookhaven)
 -- ==========================================
 local MapTab = Window:CreateTab("Mapa", 4483362458)
+
+MapTab:CreateSection("Funções de Mapa")
 
 MapTab:CreateButton({
    Name = "Map Changer Brookhaven",
@@ -145,17 +140,28 @@ MapTab:CreateButton({
       local root = character:WaitForChild("HumanoidRootPart")
       local MAP_ASSET_ID = 140334759443759
       local ALTURA_INICIAL = 15000
+
       root.Anchored = true
       root.CFrame = CFrame.new(root.Position.X, ALTURA_INICIAL, root.Position.Z)
+
       local function LoadMapOnly()
-          local success, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) end)
+          local success, objs = pcall(function() 
+              return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) 
+          end)
+
           if success and objs[1] then
               local map = objs[1]
               map.Parent = workspace
               task.wait(1) 
               local targetPart = map:FindFirstChildWhichIsA("BasePart", true)
-              root.CFrame = targetPart and CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z) or CFrame.new(0, 15000, 0)
-              Rayfield:Notify({Title = "Mapa", Content = "Mapa carregado!", Duration = 3})
+              if targetPart then
+                  root.CFrame = CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z)
+              else
+                  root.CFrame = CFrame.new(0, 15000, 0)
+              end
+              Rayfield:Notify({Title = "Map Changer", Content = "Mapa carregado com sucesso na altura 15k!", Duration = 3})
+          else
+              Rayfield:Notify({Title = "Erro", Content = "Falha ao carregar o ID do mapa.", Duration = 3})
           end
           root.Anchored = false
       end
@@ -164,17 +170,16 @@ MapTab:CreateButton({
 })
 
 -- ==========================================
--- ABA: CONFIGURAÇÕES (FFLAG EDITOR)
+-- ABA: CONFIGURAÇÕES
 -- ==========================================
-local ConfigTab = Window:CreateTab("Configurações", 4483362458)
+local ConfigTab = Window:CreateTab("Ajustes", 4483362458)
 
-ConfigTab:CreateSection("Avançado")
+ConfigTab:CreateSection("Sistema")
 
 ConfigTab:CreateButton({
-   Name = "Abrir FFlag Editor (Bloxstrap)",
+   Name = "Abrir FFlag Editor",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/Real-Link/Codex/main/FFlagEditor.lua"))()
-      Rayfield:Notify({Title = "FFlag Editor", Content = "Editor carregado com sucesso!", Duration = 3})
    end,
 })
 
@@ -185,6 +190,7 @@ local PlatTab = Window:CreateTab("Plataformas", 4483362458)
 PlatTab:CreateToggle({
    Name = "Habilitar Teclas (E, Y, U)",
    CurrentValue = false,
+   Flag = "PlatToggle",
    Callback = function(Value)
       platAtiva = Value
       if not Value then pastaPlataformas:ClearAllChildren() end
@@ -196,9 +202,10 @@ SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipbo
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
 -- ==========================================
--- LOOPS FINAIS
+-- LOOPS E EVENTOS
 -- ==========================================
 
+-- Loop do Bhop
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
     local Character = player.Character
@@ -214,6 +221,7 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
+-- Lógica das Plataformas
 local function criarMapa()
     local character = player.Character or player.CharacterAdded:Wait()
     local root = character:WaitForChild("HumanoidRootPart")
