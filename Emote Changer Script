@@ -14,17 +14,76 @@ local Window = Rayfield:CreateWindow({
 -- ==========================================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Estados
 local platAtiva = false
 local modoVisivel = false
 local bhopAtivo = false
 local ultimaPlataforma = nil
 
+-- Variáveis do BHOP Avançado
+local LastJump = 0
+local JUMP_COOLDOWN = 0.15
+local GROUND_CHECK_DISTANCE = 3.5
+local MAX_SLOPE_ANGLE = 45
+
 local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- ABA SCRIPTS (VISUAL, MOVIMENTAÇÃO, ETC)
+-- FUNÇÃO BHOP AVANÇADA (Extraída do seu script)
+-- ==========================================
+local function IsOnGround(Character, HRP, Humanoid)
+    if not Character or not HRP or not Humanoid then return false end
+
+    local state = Humanoid:GetState()
+    if state == Enum.HumanoidStateType.Jumping or 
+       state == Enum.HumanoidStateType.Freefall or
+       state == Enum.HumanoidStateType.Swimming then
+        return false
+    end
+
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterDescendantsInstances = {Character}
+    raycastParams.IgnoreWater = true
+
+    local rayOrigin = HRP.Position
+    local rayDirection = Vector3.new(0, -GROUND_CHECK_DISTANCE, 0)
+    local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+    if not raycastResult then return false end
+
+    local surfaceNormal = raycastResult.Normal
+    local angle = math.deg(math.acos(surfaceNormal:Dot(Vector3.new(0, 1, 0))))
+
+    return angle <= MAX_SLOPE_ANGLE
+end
+
+-- Hook do Bhop no Loop do Coração (Heartbeat)
+RunService.Heartbeat:Connect(function()
+    if not bhopAtivo then return end
+    
+    local Character = player.Character
+    if Character then
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        local HRP = Character:FindFirstChild("HumanoidRootPart")
+        
+        if Humanoid and Humanoid.Health > 0 and HRP then
+            local now = tick()
+            -- Checa se o jogador está segurando Espaço e se está no chão
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) and IsOnGround(Character, HRP, Humanoid) and (now - LastJump) > JUMP_COOLDOWN then
+                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                LastJump = now
+            end
+        end
+    end
+end)
+
+-- ==========================================
+-- ABA SCRIPTS
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
@@ -34,14 +93,14 @@ Tab:CreateButton({
    Name = "Ativar Shaders by drayko.exe",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
-      Rayfield:Notify({Title = "Shaders", Content = "Script carregado!", Duration = 3})
+      Rayfield:Notify({Title = "Shaders", Content = "Script carregado via GitHub!", Duration = 3})
    end,
 })
 
 Tab:CreateSection("Movimentação")
 
 Tab:CreateToggle({
-   Name = "Bhop (Pular ao segurar Espaço)",
+   Name = "Bhop (Pulo Perfeito)",
    CurrentValue = false,
    Flag = "BhopToggle",
    Callback = function(Value)
@@ -81,8 +140,6 @@ Tab:CreateToggle({
    end,
 })
 
-Tab:CreateLabel("E = Spawn | Y = Visível | U = TP Fim")
-
 -- ==========================================
 -- ABA SOCIAL
 -- ==========================================
@@ -107,22 +164,7 @@ SocialTab:CreateButton({
 })
 
 -- ==========================================
--- LÓGICA DO BHOP (PULO PERFEITO)
--- ==========================================
-RunService.RenderStepped:Connect(function()
-    if bhopAtivo then
-        local character = player.Character
-        if character and character:FindFirstChild("Humanoid") then
-            -- Verifica se o jogador está segurando Espaço e se ele está tocando o chão
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) and character.Humanoid.FloorMaterial ~= Enum.Material.Air then
-                character.Humanoid.Jump = true
-            end
-        end
-    end
-end)
-
--- ==========================================
--- LÓGICA DAS PLATAFORMAS (INPUTS)
+-- LÓGICA DAS PLATAFORMAS
 -- ==========================================
 local function atualizarVisual()
     for _, parte in pairs(pastaPlataformas:GetChildren()) do
