@@ -1,60 +1,88 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Menu de Modificações | @drayko.exe",
-   LoadingTitle = "Carregando Modificações...",
-   LoadingSubtitle = "made by drayko",
+   Name = "Menu de Modificações | drayko",
+   LoadingTitle = "Carregando Scripts...",
+   LoadingSubtitle = "by drayko",
    ConfigurationSaving = {
       Enabled = false
    }
 })
 
 -- ==========================================
--- VARIÁVEIS DAS PLATAFORMAS
+-- VARIÁVEIS E CONFIGURAÇÕES
 -- ==========================================
 local UserInputService = game:GetService("UserInputService")
-local player = game.Players.LocalPlayer
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Controle de Estados
 local platAtiva = false
 local modoVisivel = false
+local shadersAtivos = false
 local ultimaPlataforma = nil
-local tamanhoMapa = 500
-local tamanhoParte = 8
+local shaderConnection = nil
+
 local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÕES DAS PLATAFORMAS
+-- FUNÇÕES DE SHADERS (BY DRAYKO.EXE)
 -- ==========================================
-local function atualizarVisual()
-    for _, parte in pairs(pastaPlataformas:GetChildren()) do
-        parte.Transparency = modoVisivel and 0.3 or 1
-        parte.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
-    end
-end
-
-local function criarMapa()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local root = character:WaitForChild("HumanoidRootPart")
-    local altura = root.Position.Y - 3
-
-    for x = -tamanhoMapa, tamanhoMapa, tamanhoParte do
-        for z = -tamanhoMapa, tamanhoMapa, tamanhoParte do
-            local parte = Instance.new("Part")
-            parte.Size = Vector3.new(tamanhoParte, 1, tamanhoParte)
-            parte.Position = Vector3.new(x, altura, z)
-            parte.Anchored = true
-            parte.CanCollide = true
-            parte.Transparency = modoVisivel and 0.3 or 1
-            parte.Parent = pastaPlataformas
-            ultimaPlataforma = parte
+local function processObject(obj)
+    if not shadersAtivos then return end
+    if obj:IsA("BasePart") then
+        obj.Material = Enum.Material.SmoothPlastic
+        if obj.Transparency == 0 then
+            obj.Reflectance = 0.6
         end
     end
 end
 
+local function applyLighting()
+    if not shadersAtivos then return end
+    Lighting.Technology = Enum.Technology.Future
+    Lighting.Brightness = 2.2
+    Lighting.GlobalShadows = true
+    Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
+    
+    if not Lighting:FindFirstChild("DraykoSky") then
+        local sky = Instance.new("Sky")
+        sky.Name = "DraykoSky"
+        sky.SkyboxUp = "rbxassetid://159067921"
+        sky.SunAngularSize = 0
+        sky.Parent = Lighting
+    end
+end
+
 -- ==========================================
--- ABA PRINCIPAL (EMOTES & PLATAFORMAS)
+-- ABA SCRIPTS (EMOTES, PLATAFORMAS, SHADERS)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
+
+Tab:CreateSection("Visual")
+
+Tab:CreateToggle({
+   Name = "Shaders by drayko.exe",
+   CurrentValue = false,
+   Flag = "ShaderToggle",
+   Callback = function(Value)
+      shadersAtivos = Value
+      if Value then
+         applyLighting()
+         for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end
+         shaderConnection = Workspace.DescendantAdded:Connect(processObject)
+         Rayfield:Notify({Title = "Shaders", Content = "Efeitos aplicados por drayko.exe!", Duration = 3})
+      else
+         if shaderConnection then shaderConnection:Disconnect() end
+         Lighting.Brightness = 1 
+         if Lighting:FindFirstChild("DraykoSky") then Lighting.DraykoSky:Destroy() end
+         Rayfield:Notify({Title = "Shaders", Content = "Shaders desativados.", Duration = 3})
+      end
+   end,
+})
 
 Tab:CreateSection("Emotes")
 
@@ -88,20 +116,18 @@ Tab:CreateToggle({
    end,
 })
 
-Tab:CreateLabel("E = Spawn | Y = Visível | U = TP Fim")
-
 -- ==========================================
--- ABA SOCIAL (TikTok & Discord)
+-- ABA SOCIAL
 -- ==========================================
 local SocialTab = Window:CreateTab("Social", 4483362458)
 
-SocialTab:CreateSection("by drayko")
+SocialTab:CreateSection("Links")
 
 SocialTab:CreateButton({
    Name = "Copiar Discord",
    Callback = function()
       setclipboard("https://discord.gg/bqgVRCWm")
-      Rayfield:Notify({Title = "Sucesso", Content = "Convite do Discord copiado!", Duration = 3})
+      Rayfield:Notify({Title = "Sucesso", Content = "Convite copiado!", Duration = 3})
    end,
 })
 
@@ -114,7 +140,7 @@ SocialTab:CreateButton({
 })
 
 -- ==========================================
--- LÓGICA DE INPUT (TECLAS)
+-- LÓGICA DE INPUT
 -- ==========================================
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not platAtiva then return end
@@ -123,17 +149,35 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if #pastaPlataformas:GetChildren() > 0 then
             pastaPlataformas:ClearAllChildren()
         else
-            criarMapa()
+            local character = player.Character
+            if character then
+                local root = character:WaitForChild("HumanoidRootPart")
+                for x = -500, 500, 16 do -- Aumentei o espaçamento para evitar lag em mapas grandes
+                    for z = -500, 500, 16 do
+                        local p = Instance.new("Part")
+                        p.Size = Vector3.new(16, 1, 16)
+                        p.Position = Vector3.new(x, root.Position.Y - 3, z)
+                        p.Anchored, p.CanCollide = true, true
+                        p.Transparency = modoVisivel and 0.3 or 1
+                        p.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
+                        p.Parent = pastaPlataformas
+                        ultimaPlataforma = p
+                    end
+                end
+            end
         end
     end
 
     if input.KeyCode == Enum.KeyCode.Y then
         modoVisivel = not modoVisivel
-        atualizarVisual()
+        for _, p in pairs(pastaPlataformas:GetChildren()) do
+            p.Transparency = modoVisivel and 0.3 or 1
+            p.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
+        end
     end
 
-    if input.KeyCode == Enum.KeyCode.U then
-        if ultimaPlataforma and player.Character then
+    if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then
+        if player.Character then
             player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0)
         end
     end
