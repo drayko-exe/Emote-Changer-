@@ -34,6 +34,19 @@ local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or In
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
+-- FUNÇÕES DE SUPORTE
+-- ==========================================
+
+-- Função original para os outros emotes
+local function AdvancedRename(oldName, newName)
+    for _, item in pairs(ReplicatedStorage:GetDescendants()) do
+        if item.Name == oldName then
+            item.Name = newName
+        end
+    end
+end
+
+-- ==========================================
 -- ABA: SCRIPTS (Visuais e Movimentação)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
@@ -75,30 +88,34 @@ Tab:CreateToggle({
 Tab:CreateSection("Emotes")
 
 Tab:CreateToggle({
-   Name = "Renomear Emotes (Direct Path)",
+   Name = "Renomear Emotes",
    CurrentValue = false,
    Flag = "EmoteToggle",
    Callback = function(Value)
-      local Emotes = ReplicatedStorage:WaitForChild("Items"):WaitForChild("Emotes")
-      
       if Value then
          pcall(function()
-            -- Substituições diretas solicitadas
-            Emotes.ZombieStride.Name = "Catjam"
-            Emotes.Griddy.Name = "SwagWalk"
+            -- Do seu jeito (Caminho Direto)
+            game:GetService("ReplicatedStorage").Items.Emotes.ZombieStride.Name = "Catjam"
+            game:GetService("ReplicatedStorage").Items.Emotes.Griddy.Name = "SwagWalk"
             
-            -- Outros (mantendo a lógica de caminho direto)
-            if Emotes:FindFirstChild("WerewolfHowl") then Emotes.WerewolfHowl.Name = "GoofyStride" end
-            if Emotes:FindFirstChild("Broom") then Emotes.Broom.Name = "BumperKart" end
+            -- Do jeito original (Busca)
+            AdvancedRename("WerewolfHowl", "GoofyStride")
+            AdvancedRename("Broom", "BumperKart")
+            AdvancedRename("SkateboardStroll", "Nostalgia")
+            AdvancedRename("RockinStride", "Stride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "Catjam e SwagWalk ativos!", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "Catjam, SwagWalk e outros ativos!", Duration = 2})
       else
          pcall(function()
-            -- Restaurando nomes originais
-            if Emotes:FindFirstChild("Catjam") then Emotes.Catjam.Name = "ZombieStride" end
-            if Emotes:FindFirstChild("SwagWalk") then Emotes.SwagWalk.Name = "Griddy" end
-            if Emotes:FindFirstChild("GoofyStride") then Emotes.GoofyStride.Name = "WerewolfHowl" end
-            if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Broom" end
+            -- Restaurando do seu jeito
+            game:GetService("ReplicatedStorage").Items.Emotes.Catjam.Name = "ZombieStride"
+            game:GetService("ReplicatedStorage").Items.Emotes.SwagWalk.Name = "Griddy"
+            
+            -- Restaurando do jeito original
+            AdvancedRename("GoofyStride", "WerewolfHowl")
+            AdvancedRename("BumperKart", "Broom")
+            AdvancedRename("Nostalgia", "SkateboardStroll")
+            AdvancedRename("Stride", "RockinStride")
          end)
          Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
       end
@@ -106,40 +123,31 @@ Tab:CreateToggle({
 })
 
 -- ==========================================
--- ABA: MAPA (Brookhaven)
+-- ABA: MAPA, AJUSTES E PLATAFORMAS (Mantidos)
 -- ==========================================
 local MapTab = Window:CreateTab("Mapa", 4483362458)
-
 MapTab:CreateButton({
    Name = "Map Changer Brookhaven",
    Callback = function()
       local character = player.Character or player.CharacterAdded:Wait()
       local root = character:WaitForChild("HumanoidRootPart")
       local MAP_ASSET_ID = 140334759443759
-      local ALTURA_INICIAL = 15000
       root.Anchored = true
-      root.CFrame = CFrame.new(root.Position.X, ALTURA_INICIAL, root.Position.Z)
-      local function LoadMapOnly()
+      root.CFrame = CFrame.new(root.Position.X, 15000, root.Position.Z)
+      task.spawn(function()
           local success, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) end)
           if success and objs[1] then
-              local map = objs[1]
-              map.Parent = workspace
-              task.wait(1) 
-              local targetPart = map:FindFirstChildWhichIsA("BasePart", true)
+              objs[1].Parent = workspace
+              task.wait(1)
+              local targetPart = objs[1]:FindFirstChildWhichIsA("BasePart", true)
               root.CFrame = targetPart and CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z) or CFrame.new(0, 15000, 0)
-              Rayfield:Notify({Title = "Mapa", Content = "Mapa carregado!", Duration = 3})
           end
           root.Anchored = false
-      end
-      task.spawn(LoadMapOnly)
+      end)
    end,
 })
 
--- ==========================================
--- ABA: AJUSTES (FFLAG)
--- ==========================================
 local ConfigTab = Window:CreateTab("Ajustes", 4483362458)
-
 ConfigTab:CreateButton({
    Name = "Abrir FFlag Editor",
    Callback = function()
@@ -147,9 +155,6 @@ ConfigTab:CreateButton({
    end,
 })
 
--- ==========================================
--- ABA: PLATAFORMAS E SOCIAL
--- ==========================================
 local PlatTab = Window:CreateTab("Plataformas", 4483362458)
 PlatTab:CreateToggle({
    Name = "Habilitar Teclas (E, Y, U)",
@@ -164,60 +169,38 @@ local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
--- ==========================================
--- LOOPS E EVENTOS FINAIS
--- ==========================================
-
+-- Loop Bhop e Plataformas
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
-    local Character = player.Character
-    if Character then
-        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-        local HRP = Character:FindFirstChild("HumanoidRootPart")
-        if Humanoid and HRP and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            -- Verificação de chão
-            local raycastParams = RaycastParams.new()
-            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-            raycastParams.FilterDescendantsInstances = {Character}
-            local raycastResult = workspace:Raycast(HRP.Position, Vector3.new(0, -3.5, 0), raycastParams)
-            
-            if raycastResult and (tick() - LastJump) > JUMP_COOLDOWN then
-                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                LastJump = tick()
-            end
+    local Char = player.Character
+    if Char and Char:FindFirstChild("Humanoid") and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+        local Hum = Char.Humanoid
+        local HRP = Char:FindFirstChild("HumanoidRootPart")
+        if HRP and (Hum:GetState() ~= Enum.HumanoidStateType.Jumping) and (tick() - LastJump) > JUMP_COOLDOWN then
+            Hum:ChangeState(Enum.HumanoidStateType.Jumping)
+            LastJump = tick()
         end
     end
 end)
 
 local function criarMapa()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local root = character:WaitForChild("HumanoidRootPart")
+    local root = player.Character:WaitForChild("HumanoidRootPart")
     local altura = root.Position.Y - 3
     for x = -500, 500, 12 do
         for z = -500, 500, 12 do
-            local parte = Instance.new("Part")
-            parte.Size = Vector3.new(12, 1, 12)
-            parte.Position = Vector3.new(x, altura, z)
-            parte.Anchored, parte.CanCollide = true, true
-            parte.Transparency = modoVisivel and 0.3 or 1
-            parte.Parent = pastaPlataformas
-            ultimaPlataforma = parte
+            local p = Instance.new("Part", pastaPlataformas)
+            p.Size, p.Position, p.Anchored = Vector3.new(12, 1, 12), Vector3.new(x, altura, z), true
+            p.Transparency = modoVisivel and 0.3 or 1
+            ultimaPlataforma = p
         end
     end
 end
 
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp or not platAtiva then return end
-    if input.KeyCode == Enum.KeyCode.E then 
-        if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end 
-    end
-    if input.KeyCode == Enum.KeyCode.Y then 
-        modoVisivel = not modoVisivel 
-        for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end 
-    end
-    if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then 
-        player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0) 
-    end
+    if input.KeyCode == Enum.KeyCode.E then if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end end
+    if input.KeyCode == Enum.KeyCode.Y then modoVisivel = not modoVisivel for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end end
+    if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0) end
 end)
 
 Rayfield:LoadConfiguration()
