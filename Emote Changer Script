@@ -115,12 +115,16 @@ Tab:CreateToggle({
       local Emotes = game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Emotes")
       if Value then
          if Emotes:FindFirstChild("WerewolfHowl") then Emotes.WerewolfHowl.Name = "GoofyStride" end
-         if Emotes:FindFirstChild("Griddy") then Emotes.Griddy.Name = "BumperKart" end
+         if Emotes:FindFirstChild("Broom") then Emotes.Broom.Name = "BumperKart" end
          if Emotes:FindFirstChild("SkateboardStroll") then Emotes.SkateboardStroll.Name = "Nostalgia" end
+         if Emotes:FindFirstChild("RockinStride") then Emotes.RockinStride.Name = "Stride" end
+         if Emotes:FindFirstChild("ZombieStride") then Emotes.ZombieStride.Name = "Catjam" end
       else
          if Emotes:FindFirstChild("GoofyStride") then Emotes.GoofyStride.Name = "WerewolfHowl" end
-         if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Griddy" end
+         if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Broom" end
          if Emotes:FindFirstChild("Nostalgia") then Emotes.Nostalgia.Name = "SkateboardStroll" end
+         if Emotes:FindFirstChild("Stride") then Emotes.Stride.Name = "RockinStride" end
+         if Emotes:FindFirstChild("Catjam") then Emotes.Catjam.Name = "ZombieStride" end
       end
    end,
 })
