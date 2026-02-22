@@ -33,47 +33,36 @@ local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or In
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÃO BHOP AVANÇADA (Extraída do seu script)
+-- FUNÇÃO BHOP AVANÇADA
 -- ==========================================
 local function IsOnGround(Character, HRP, Humanoid)
     if not Character or not HRP or not Humanoid then return false end
-
     local state = Humanoid:GetState()
     if state == Enum.HumanoidStateType.Jumping or 
        state == Enum.HumanoidStateType.Freefall or
        state == Enum.HumanoidStateType.Swimming then
         return false
     end
-
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
     raycastParams.FilterDescendantsInstances = {Character}
-    raycastParams.IgnoreWater = true
-
     local rayOrigin = HRP.Position
     local rayDirection = Vector3.new(0, -GROUND_CHECK_DISTANCE, 0)
     local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
-
     if not raycastResult then return false end
-
     local surfaceNormal = raycastResult.Normal
     local angle = math.deg(math.acos(surfaceNormal:Dot(Vector3.new(0, 1, 0))))
-
     return angle <= MAX_SLOPE_ANGLE
 end
 
--- Hook do Bhop no Loop do Coração (Heartbeat)
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
-    
     local Character = player.Character
     if Character then
         local Humanoid = Character:FindFirstChildOfClass("Humanoid")
         local HRP = Character:FindFirstChild("HumanoidRootPart")
-        
         if Humanoid and Humanoid.Health > 0 and HRP then
             local now = tick()
-            -- Checa se o jogador está segurando Espaço e se está no chão
             if UserInputService:IsKeyDown(Enum.KeyCode.Space) and IsOnGround(Character, HRP, Humanoid) and (now - LastJump) > JUMP_COOLDOWN then
                 Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                 LastJump = now
@@ -87,13 +76,21 @@ end)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
-Tab:CreateSection("Visual")
+Tab:CreateSection("Visual (Shaders)")
 
 Tab:CreateButton({
-   Name = "Ativar Shaders by drayko.exe",
+   Name = "Purple Shaders by drayko",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
-      Rayfield:Notify({Title = "Shaders", Content = "Script carregado via GitHub!", Duration = 3})
+      Rayfield:Notify({Title = "Shaders", Content = "Purple Shaders carregado!", Duration = 3})
+   end,
+})
+
+Tab:CreateButton({
+   Name = "Red Shaders by drayko",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v2-by-drayko.exe/refs/heads/main/shaders%20v2"))()
+      Rayfield:Notify({Title = "Shaders", Content = "Red Shaders V2 carregado!", Duration = 3})
    end,
 })
 
@@ -177,7 +174,6 @@ local function criarMapa()
     local character = player.Character or player.CharacterAdded:Wait()
     local root = character:WaitForChild("HumanoidRootPart")
     local altura = root.Position.Y - 3
-
     for x = -500, 500, 8 do
         for z = -500, 500, 8 do
             local parte = Instance.new("Part")
@@ -193,7 +189,6 @@ end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not platAtiva then return end
-
     if input.KeyCode == Enum.KeyCode.E then
         if #pastaPlataformas:GetChildren() > 0 then
             pastaPlataformas:ClearAllChildren()
@@ -201,12 +196,10 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             criarMapa()
         end
     end
-
     if input.KeyCode == Enum.KeyCode.Y then
         modoVisivel = not modoVisivel
         atualizarVisual()
     end
-
     if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then
         if player.Character then
             player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0)
