@@ -29,7 +29,7 @@ local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or In
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÕES DE SHADERS (BY DRAYKO.EXE)
+-- FUNÇÕES DE SHADERS (RTX/ILUMINAÇÃO)
 -- ==========================================
 local function processObject(obj)
     if not shadersAtivos then return end
@@ -51,7 +51,7 @@ local function applyLighting()
     if not Lighting:FindFirstChild("DraykoSky") then
         local sky = Instance.new("Sky")
         sky.Name = "DraykoSky"
-        sky.SkyboxUp = "rbxassetid://16573649975"
+        sky.SkyboxUp = "rbxassetid://159067921"
         sky.SunAngularSize = 0
         sky.Parent = Lighting
     end
@@ -62,10 +62,10 @@ end
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
-Tab:CreateSection("Visual")
+Tab:CreateSection("Visual & Shaders")
 
 Tab:CreateToggle({
-   Name = "Shaders by drayko.exe",
+   Name = "Ativar Shaders RTX",
    CurrentValue = false,
    Flag = "ShaderToggle",
    Callback = function(Value)
@@ -74,12 +74,12 @@ Tab:CreateToggle({
          applyLighting()
          for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end
          shaderConnection = Workspace.DescendantAdded:Connect(processObject)
-         Rayfield:Notify({Title = "Shaders", Content = "Efeitos aplicados por drayko.exe!", Duration = 3})
+         Rayfield:Notify({Title = "Shaders", Content = "Efeitos visuais aplicados!", Duration = 3})
       else
          if shaderConnection then shaderConnection:Disconnect() end
-         Lighting.Brightness = 1 
+         Lighting.Brightness = 1 -- Retorna ao padrão aproximado
          if Lighting:FindFirstChild("DraykoSky") then Lighting.DraykoSky:Destroy() end
-         Rayfield:Notify({Title = "Shaders", Content = "Shaders desativados.", Duration = 3})
+         Rayfield:Notify({Title = "Shaders", Content = "O script parou de processar novos shaders.", Duration = 3})
       end
    end,
 })
@@ -121,7 +121,7 @@ Tab:CreateToggle({
 -- ==========================================
 local SocialTab = Window:CreateTab("Social", 4483362458)
 
-SocialTab:CreateSection("Links")
+SocialTab:CreateSection("by drayko")
 
 SocialTab:CreateButton({
    Name = "Copiar Discord",
@@ -135,12 +135,12 @@ SocialTab:CreateButton({
    Name = "TikTok (@drayko.exe)",
    Callback = function()
       setclipboard("https://www.tiktok.com/@drayko.exe")
-      Rayfield:Notify({Title = "Sucesso", Content = "Link do TikTok copiado!", Duration = 3})
+      Rayfield:Notify({Title = "Sucesso", Content = "TikTok copiado!", Duration = 3})
    end,
 })
 
 -- ==========================================
--- LÓGICA DE INPUT
+-- LÓGICA DE INPUT E LOOP PLATAFORMAS
 -- ==========================================
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not platAtiva then return end
@@ -152,10 +152,10 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             local character = player.Character
             if character then
                 local root = character:WaitForChild("HumanoidRootPart")
-                for x = -500, 500, 16 do -- Aumentei o espaçamento para evitar lag em mapas grandes
-                    for z = -500, 500, 16 do
+                for x = -500, 500, 8 do
+                    for z = -500, 500, 8 do
                         local p = Instance.new("Part")
-                        p.Size = Vector3.new(16, 1, 16)
+                        p.Size = Vector3.new(8, 1, 8)
                         p.Position = Vector3.new(x, root.Position.Y - 3, z)
                         p.Anchored, p.CanCollide = true, true
                         p.Transparency = modoVisivel and 0.3 or 1
