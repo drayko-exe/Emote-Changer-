@@ -26,39 +26,12 @@ local player = Players.LocalPlayer
 local bhopAtivo = false
 local platAtiva = false
 local modoVisivel = false
-local emoteLoopAtivo = false
 local ultimaPlataforma = nil
 local LastJump = 0
 local JUMP_COOLDOWN = 0.15
 
 local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
 pastaPlataformas.Name = "PlataformasInvisiveis"
-
--- ==========================================
--- FUNÇÕES DE SUPORTE
--- ==========================================
-
--- Função de renomear com verificação contínua (Fix Catjam, Broom e SwagWalk)
-local function ForceRename(oldName, newName)
-    for _, item in pairs(ReplicatedStorage:GetDescendants()) do
-        if item.Name == oldName then
-            item.Name = newName
-        end
-    end
-end
-
--- Verificação de chão para o Bhop
-local function IsOnGround(Character, HRP, Humanoid)
-    if not Character or not HRP or not Humanoid then return false end
-    local state = Humanoid:GetState()
-    if state == Enum.HumanoidStateType.Jumping or state == Enum.HumanoidStateType.Freefall then return false end
-    
-    local raycastParams = RaycastParams.new()
-    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-    raycastParams.FilterDescendantsInstances = {Character}
-    local raycastResult = workspace:Raycast(HRP.Position, Vector3.new(0, -3.5, 0), raycastParams)
-    return raycastResult ~= nil
-end
 
 -- ==========================================
 -- ABA: SCRIPTS (Visuais e Movimentação)
@@ -102,32 +75,32 @@ Tab:CreateToggle({
 Tab:CreateSection("Emotes")
 
 Tab:CreateToggle({
-   Name = "Renomear Emotes (Fix All)",
+   Name = "Renomear Emotes (Direct Path)",
    CurrentValue = false,
    Flag = "EmoteToggle",
    Callback = function(Value)
-      emoteLoopAtivo = Value
+      local Emotes = ReplicatedStorage:WaitForChild("Items"):WaitForChild("Emotes")
+      
       if Value then
-         task.spawn(function()
-            while emoteLoopAtivo do
-               ForceRename("WerewolfHowl", "GoofyStride")
-               ForceRename("Broom", "BumperKart")
-               ForceRename("SkateboardStroll", "Nostalgia")
-               ForceRename("RockinStride", "Stride")
-               ForceRename("ZombieStride", "Catjam")
-               ForceRename("SwagWalk", "OldSchool") -- Adicionado SwagWalk
-               task.wait(2)
-            end
+         pcall(function()
+            -- Substituições diretas solicitadas
+            Emotes.ZombieStride.Name = "Catjam"
+            Emotes.Griddy.Name = "SwagWalk"
+            
+            -- Outros (mantendo a lógica de caminho direto)
+            if Emotes:FindFirstChild("WerewolfHowl") then Emotes.WerewolfHowl.Name = "GoofyStride" end
+            if Emotes:FindFirstChild("Broom") then Emotes.Broom.Name = "BumperKart" end
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "Catjam, Broom e SwagWalk ativos!", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "Catjam e SwagWalk ativos!", Duration = 2})
       else
-         ForceRename("GoofyStride", "WerewolfHowl")
-         ForceRename("BumperKart", "Broom")
-         ForceRename("Nostalgia", "SkateboardStroll")
-         ForceRename("Stride", "RockinStride")
-         ForceRename("Catjam", "ZombieStride")
-         ForceRename("OldSchool", "SwagWalk")
-         Rayfield:Notify({Title = "Emotes", Content = "Nomes restaurados.", Duration = 2})
+         pcall(function()
+            -- Restaurando nomes originais
+            if Emotes:FindFirstChild("Catjam") then Emotes.Catjam.Name = "ZombieStride" end
+            if Emotes:FindFirstChild("SwagWalk") then Emotes.SwagWalk.Name = "Griddy" end
+            if Emotes:FindFirstChild("GoofyStride") then Emotes.GoofyStride.Name = "WerewolfHowl" end
+            if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Broom" end
+         end)
+         Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
       end
    end,
 })
@@ -137,8 +110,6 @@ Tab:CreateToggle({
 -- ==========================================
 local MapTab = Window:CreateTab("Mapa", 4483362458)
 
-MapTab:CreateSection("Funções de Mapa")
-
 MapTab:CreateButton({
    Name = "Map Changer Brookhaven",
    Callback = function()
@@ -146,26 +117,17 @@ MapTab:CreateButton({
       local root = character:WaitForChild("HumanoidRootPart")
       local MAP_ASSET_ID = 140334759443759
       local ALTURA_INICIAL = 15000
-
       root.Anchored = true
       root.CFrame = CFrame.new(root.Position.X, ALTURA_INICIAL, root.Position.Z)
-
       local function LoadMapOnly()
-          local success, objs = pcall(function() 
-              return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) 
-          end)
-
+          local success, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) end)
           if success and objs[1] then
               local map = objs[1]
               map.Parent = workspace
               task.wait(1) 
               local targetPart = map:FindFirstChildWhichIsA("BasePart", true)
-              if targetPart then
-                  root.CFrame = CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z)
-              else
-                  root.CFrame = CFrame.new(0, 15000, 0)
-              end
-              Rayfield:Notify({Title = "Map Changer", Content = "Mapa carregado com sucesso!", Duration = 3})
+              root.CFrame = targetPart and CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z) or CFrame.new(0, 15000, 0)
+              Rayfield:Notify({Title = "Mapa", Content = "Mapa carregado!", Duration = 3})
           end
           root.Anchored = false
       end
@@ -192,7 +154,6 @@ local PlatTab = Window:CreateTab("Plataformas", 4483362458)
 PlatTab:CreateToggle({
    Name = "Habilitar Teclas (E, Y, U)",
    CurrentValue = false,
-   Flag = "PlatToggle",
    Callback = function(Value)
       platAtiva = Value
       if not Value then pastaPlataformas:ClearAllChildren() end
@@ -214,7 +175,13 @@ RunService.Heartbeat:Connect(function()
         local Humanoid = Character:FindFirstChildOfClass("Humanoid")
         local HRP = Character:FindFirstChild("HumanoidRootPart")
         if Humanoid and HRP and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            if IsOnGround(Character, HRP, Humanoid) and (tick() - LastJump) > JUMP_COOLDOWN then
+            -- Verificação de chão
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+            raycastParams.FilterDescendantsInstances = {Character}
+            local raycastResult = workspace:Raycast(HRP.Position, Vector3.new(0, -3.5, 0), raycastParams)
+            
+            if raycastResult and (tick() - LastJump) > JUMP_COOLDOWN then
                 Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                 LastJump = tick()
             end
