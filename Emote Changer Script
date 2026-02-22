@@ -29,7 +29,7 @@ local modoVisivel = false
 local ultimaPlataforma = nil
 local LastJump = 0
 
--- Configurações extraídas do Yomka para o Bhop
+-- Configurações de Movimentação (By drayko)
 local JUMP_COOLDOWN = 0.15
 local GROUND_CHECK_DISTANCE = 3.5
 local MAX_SLOPE_ANGLE = 45
@@ -41,7 +41,7 @@ pastaPlataformas.Name = "PlataformasInvisiveis"
 -- FUNÇÕES DE SUPORTE
 -- ==========================================
 
--- Lógica de Detecção de Chão do Yomka (Melhorada)
+-- Lógica de Detecção de Chão (By drayko)
 local function IsOnGroundAdvanced()
     local Character = player.Character
     if not Character then return false end
@@ -65,7 +65,7 @@ local function IsOnGroundAdvanced()
     return angle <= MAX_SLOPE_ANGLE
 end
 
--- Função original para os outros emotes
+-- Função de renomeação para os outros emotes
 local function AdvancedRename(oldName, newName)
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
         if item.Name == oldName then
@@ -107,7 +107,7 @@ Tab:CreateButton({
 Tab:CreateSection("Movimentação")
 
 Tab:CreateToggle({
-   Name = "Bhop (Sistema Yomka)",
+   Name = "Bhop (By drayko)",
    CurrentValue = false,
    Flag = "BhopToggle",
    Callback = function(Value) bhopAtivo = Value end,
@@ -122,17 +122,17 @@ Tab:CreateToggle({
    Callback = function(Value)
       if Value then
          pcall(function()
-            -- Alteração solicitada (Direto)
+            -- Alteração direta solicitada
             game:GetService("ReplicatedStorage").Items.Emotes.ZombieStride.Name = "SwagWalk"
             game:GetService("ReplicatedStorage").Items.Emotes.Griddy.Name = "SwagWalk"
             
-            -- Do jeito original (Busca)
+            -- Outros (Busca)
             AdvancedRename("WerewolfHowl", "GoofyStride")
             AdvancedRename("Broom", "BumperKart")
             AdvancedRename("SkateboardStroll", "Nostalgia")
             AdvancedRename("RockinStride", "Stride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "ZombieStride e Griddy agora são SwagWalk!", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "Emotes atualizados com sucesso!", Duration = 2})
       else
          pcall(function()
             -- Restaurando
@@ -194,7 +194,7 @@ local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
--- Loop Heartbeat (Bhop do Yomka e Plataformas)
+-- Loop Heartbeat (Bhop By drayko e Plataformas)
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
     local Char = player.Character
