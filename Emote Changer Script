@@ -15,6 +15,7 @@ local Window = Rayfield:CreateWindow({
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
 -- Estados
@@ -112,19 +113,33 @@ Tab:CreateToggle({
    CurrentValue = false,
    Flag = "EmoteToggle",
    Callback = function(Value)
-      local Emotes = game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Emotes")
+      -- Tenta localizar a pasta de Emotes com segurança
+      local EmotesFolder = ReplicatedStorage:WaitForChild("Items", 5):WaitForChild("Emotes", 5)
+      
+      if not EmotesFolder then 
+         Rayfield:Notify({Title = "Erro", Content = "Pasta de Emotes não encontrada!", Duration = 3})
+         return 
+      end
+
+      local function Rename(oldName, newName)
+         local item = EmotesFolder:FindFirstChild(oldName)
+         if item then item.Name = newName end
+      end
+
       if Value then
-         if Emotes:FindFirstChild("WerewolfHowl") then Emotes.WerewolfHowl.Name = "GoofyStride" end
-         if Emotes:FindFirstChild("Broom") then Emotes.Broom.Name = "BumperKart" end
-         if Emotes:FindFirstChild("SkateboardStroll") then Emotes.SkateboardStroll.Name = "Nostalgia" end
-         if Emotes:FindFirstChild("RockinStride") then Emotes.RockinStride.Name = "Stride" end
-         if Emotes:FindFirstChild("ZombieStride") then Emotes.ZombieStride.Name = "Catjam" end
+         -- Ativando Nomes Novos
+         Rename("WerewolfHowl", "GoofyStride")
+         Rename("Broom", "BumperKart")
+         Rename("SkateboardStroll", "Nostalgia")
+         Rename("RockinStride", "Stride")
+         Rename("ZombieStride", "Catjam")
       else
-         if Emotes:FindFirstChild("GoofyStride") then Emotes.GoofyStride.Name = "WerewolfHowl" end
-         if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Broom" end
-         if Emotes:FindFirstChild("Nostalgia") then Emotes.Nostalgia.Name = "SkateboardStroll" end
-         if Emotes:FindFirstChild("Stride") then Emotes.Stride.Name = "RockinStride" end
-         if Emotes:FindFirstChild("Catjam") then Emotes.Catjam.Name = "ZombieStride" end
+         -- Voltando Nomes Originais
+         Rename("GoofyStride", "WerewolfHowl")
+         Rename("BumperKart", "Broom")
+         Rename("Nostalgia", "SkateboardStroll")
+         Rename("Stride", "RockinStride")
+         Rename("Catjam", "ZombieStride")
       end
    end,
 })
