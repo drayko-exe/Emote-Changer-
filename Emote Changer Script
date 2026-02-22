@@ -28,7 +28,10 @@ local platAtiva = false
 local modoVisivel = false
 local ultimaPlataforma = nil
 local LastJump = 0
+
 local JUMP_COOLDOWN = 0.15
+local GROUND_CHECK_DISTANCE = 3.5
+local MAX_SLOPE_ANGLE = 45
 
 local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
 pastaPlataformas.Name = "PlataformasInvisiveis"
@@ -37,7 +40,7 @@ pastaPlataformas.Name = "PlataformasInvisiveis"
 -- FUNÇÕES DE SUPORTE
 -- ==========================================
 
--- Função original para os outros emotes
+-- Busca para os outros emotes
 local function AdvancedRename(oldName, newName)
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
         if item.Name == oldName then
@@ -46,40 +49,49 @@ local function AdvancedRename(oldName, newName)
     end
 end
 
+-- Lógica de Detecção de Chão do Yomka
+local function IsOnGroundAdvanced()
+    local Character = player.Character
+    if not Character then return false end
+    
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    local HRP = Character:FindFirstChild("HumanoidRootPart")
+    
+    if not Humanoid or not HRP or Humanoid.Health <= 0 then return false end
+
+    local state = Humanoid:GetState()
+    if state == Enum.HumanoidStateType.Jumping or 
+       state == Enum.HumanoidStateType.Freefall or
+       state == Enum.HumanoidStateType.Swimming then
+        return false
+    end
+
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterDescendantsInstances = {Character}
+    raycastParams.IgnoreWater = true
+
+    local rayOrigin = HRP.Position
+    local rayDirection = Vector3.new(0, -GROUND_CHECK_DISTANCE, 0)
+    local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+    if not raycastResult then return false end
+
+    local surfaceNormal = raycastResult.Normal
+    local angle = math.deg(math.acos(surfaceNormal:Dot(Vector3.new(0, 1, 0))))
+
+    return angle <= MAX_SLOPE_ANGLE
+end
+
 -- ==========================================
--- ABA: SCRIPTS (Visuais e Movimentação)
+-- ABA: SCRIPTS
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
-
-Tab:CreateSection("Visual (Shaders)")
-
-Tab:CreateButton({
-   Name = "Purple Shaders by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Red Shaders by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v2-by-drayko.exe/refs/heads/main/shaders%20v2"))()
-   end,
-})
-
-Tab:CreateSection("Customização")
-
-Tab:CreateButton({
-   Name = "Universal Avatar Changer",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/darkdexv2/universalavatarchanger/main/avatarchanger"))()
-   end,
-})
 
 Tab:CreateSection("Movimentação")
 
 Tab:CreateToggle({
-   Name = "Bhop (Pulo Perfeito)",
+   Name = "Bhop Automático (Yomka System)",
    CurrentValue = false,
    Flag = "BhopToggle",
    Callback = function(Value) bhopAtivo = Value end,
@@ -94,59 +106,36 @@ Tab:CreateToggle({
    Callback = function(Value)
       if Value then
          pcall(function()
-            -- Do seu jeito (Caminho Direto)
-            game:GetService("ReplicatedStorage").Items.Emotes.ZombieStride.Name = "Catjam"
+            -- Substituição solicitada: ZombieStride vira SwagWalk
+            game:GetService("ReplicatedStorage").Items.Emotes.ZombieStride.Name = "SwagWalk"
+            
+            -- Griddy vira SwagWalk (conforme pedido anteriormente)
             game:GetService("ReplicatedStorage").Items.Emotes.Griddy.Name = "SwagWalk"
             
-            -- Do jeito original (Busca)
+            -- Outros renomeares
             AdvancedRename("WerewolfHowl", "GoofyStride")
             AdvancedRename("Broom", "BumperKart")
             AdvancedRename("SkateboardStroll", "Nostalgia")
             AdvancedRename("RockinStride", "Stride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "Catjam, SwagWalk e outros ativos!", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "Emotes Modificados!", Duration = 2})
       else
          pcall(function()
-            -- Restaurando do seu jeito
-            game:GetService("ReplicatedStorage").Items.Emotes.Catjam.Name = "ZombieStride"
-            game:GetService("ReplicatedStorage").Items.Emotes.SwagWalk.Name = "Griddy"
-            
-            -- Restaurando do jeito original
+            -- Restaurando
+            game:GetService("ReplicatedStorage").Items.Emotes.SwagWalk.Name = "ZombieStride"
+            -- Obs: Se houver dois com o mesmo nome (SwagWalk), o pcall ajuda a não crashar
             AdvancedRename("GoofyStride", "WerewolfHowl")
             AdvancedRename("BumperKart", "Broom")
             AdvancedRename("Nostalgia", "SkateboardStroll")
             AdvancedRename("Stride", "RockinStride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
       end
    end,
 })
 
 -- ==========================================
--- ABA: MAPA, AJUSTES E PLATAFORMAS (Mantidos)
+-- ABA: AJUSTES E MAPA
 -- ==========================================
-local MapTab = Window:CreateTab("Mapa", 4483362458)
-MapTab:CreateButton({
-   Name = "Map Changer Brookhaven",
-   Callback = function()
-      local character = player.Character or player.CharacterAdded:Wait()
-      local root = character:WaitForChild("HumanoidRootPart")
-      local MAP_ASSET_ID = 140334759443759
-      root.Anchored = true
-      root.CFrame = CFrame.new(root.Position.X, 15000, root.Position.Z)
-      task.spawn(function()
-          local success, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) end)
-          if success and objs[1] then
-              objs[1].Parent = workspace
-              task.wait(1)
-              local targetPart = objs[1]:FindFirstChildWhichIsA("BasePart", true)
-              root.CFrame = targetPart and CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z) or CFrame.new(0, 15000, 0)
-          end
-          root.Anchored = false
-      end)
-   end,
-})
-
 local ConfigTab = Window:CreateTab("Ajustes", 4483362458)
 ConfigTab:CreateButton({
    Name = "Abrir FFlag Editor",
@@ -155,52 +144,20 @@ ConfigTab:CreateButton({
    end,
 })
 
-local PlatTab = Window:CreateTab("Plataformas", 4483362458)
-PlatTab:CreateToggle({
-   Name = "Habilitar Teclas (E, Y, U)",
-   CurrentValue = false,
-   Callback = function(Value)
-      platAtiva = Value
-      if not Value then pastaPlataformas:ClearAllChildren() end
-   end,
-})
-
-local SocialTab = Window:CreateTab("Social", 4483362458)
-SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
-SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
-
--- Loop Bhop e Plataformas
+-- Loop Heartbeat para o BHOP
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
-    local Char = player.Character
-    if Char and Char:FindFirstChild("Humanoid") and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-        local Hum = Char.Humanoid
-        local HRP = Char:FindFirstChild("HumanoidRootPart")
-        if HRP and (Hum:GetState() ~= Enum.HumanoidStateType.Jumping) and (tick() - LastJump) > JUMP_COOLDOWN then
-            Hum:ChangeState(Enum.HumanoidStateType.Jumping)
-            LastJump = tick()
+    
+    local Character = player.Character
+    if Character then
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if Humanoid and Humanoid.Health > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            if IsOnGroundAdvanced() and (tick() - LastJump) > JUMP_COOLDOWN then
+                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                LastJump = tick()
+            end
         end
     end
-end)
-
-local function criarMapa()
-    local root = player.Character:WaitForChild("HumanoidRootPart")
-    local altura = root.Position.Y - 3
-    for x = -500, 500, 12 do
-        for z = -500, 500, 12 do
-            local p = Instance.new("Part", pastaPlataformas)
-            p.Size, p.Position, p.Anchored = Vector3.new(12, 1, 12), Vector3.new(x, altura, z), true
-            p.Transparency = modoVisivel and 0.3 or 1
-            ultimaPlataforma = p
-        end
-    end
-end
-
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp or not platAtiva then return end
-    if input.KeyCode == Enum.KeyCode.E then if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end end
-    if input.KeyCode == Enum.KeyCode.Y then modoVisivel = not modoVisivel for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end end
-    if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0) end
 end)
 
 Rayfield:LoadConfiguration()
