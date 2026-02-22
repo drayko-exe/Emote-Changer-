@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "Editor de Emotes",
    LoadingTitle = "Carregando Modificações...",
-   LoadingSubtitle = "by Gemini",
+   LoadingSubtitle = "by drayko", -- Crédito alterado aqui
    ConfigurationSaving = {
       Enabled = false
    }
@@ -31,7 +31,7 @@ Tab:CreateToggle({
          
          Rayfield:Notify({
             Title = "Emotes Ativados",
-            Content = "Os nomes foram alterados com sucesso!",
+            Content = "Os nomes foram alterados por drayko!",
             Duration = 3,
             Image = 4483362458,
          })
@@ -56,15 +56,15 @@ Tab:CreateToggle({
 -- ==========================================
 local SocialTab = Window:CreateTab("Social", 4483362458)
 
-SocialTab:CreateSection("Comunidade")
+SocialTab:CreateSection("Comunidade by drayko")
 
 SocialTab:CreateButton({
    Name = "Copiar Convite do Discord",
    Callback = function()
-      setclipboard("https://discord.gg/SEU_CONVITE_AQUI") -- Coloque seu link aqui
+      setclipboard("https://discord.gg/SEU_CONVITE_AQUI") -- Não esqueça de colocar seu link real!
       Rayfield:Notify({
          Title = "Discord",
-         Content = "Link copiado para a área de transferência!",
+         Content = "Link do drayko copiado!",
          Duration = 3
       })
    end,
@@ -76,7 +76,7 @@ SocialTab:CreateButton({
       setclipboard("https://youtube.com/@SEU_CANAL") -- Coloque seu link aqui
       Rayfield:Notify({
          Title = "Redes Sociais",
-         Content = "Link copiado!",
+         Content = "Link copiado com sucesso!",
          Duration = 3
       })
    end,
