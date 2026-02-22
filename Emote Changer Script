@@ -13,85 +13,39 @@ local Window = Rayfield:CreateWindow({
 -- VARIÁVEIS GERAIS
 -- ==========================================
 local UserInputService = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
-local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- Estados
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
 local platAtiva = false
 local modoVisivel = false
-local shadersAtivos = false
+local bhopAtivo = false
 local ultimaPlataforma = nil
-local shaderConnection = nil
 
 local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÕES DE SHADERS (BY DRAYKO.EXE)
--- ==========================================
-local function processObject(obj)
-    if not shadersAtivos then return end
-    if obj:IsA("BasePart") then
-        obj.Material = Enum.Material.SmoothPlastic
-        if obj.Transparency == 0 then
-            obj.Reflectance = 0.6
-        end
-    end
-end
-
-local function applyLighting()
-    if not shadersAtivos then return end
-    
-    Lighting.Technology = Enum.Technology.Future
-    Lighting.Brightness = 2.2
-    Lighting.GlobalShadows = true
-    Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
-    
-    -- Aplica Rainbow Skybox
-    if not Lighting:FindFirstChild("DraykoRainbowSky") then
-        for _, oldSky in pairs(Lighting:GetChildren()) do
-            if oldSky:IsA("Sky") then oldSky:Destroy() end
-        end
-        
-        local sky = Instance.new("Sky")
-        sky.Name = "DraykoRainbowSky"
-        sky.SkyboxBk = "rbxassetid://16573649931"
-        sky.SkyboxDn = "rbxassetid://16573649940"
-        sky.SkyboxFt = "rbxassetid://16573649952"
-        sky.SkyboxLf = "rbxassetid://16573649960"
-        sky.SkyboxRt = "rbxassetid://16573649964"
-        sky.SkyboxUp = "rbxassetid://16573649970"
-        sky.SunAngularSize = 0
-        sky.Parent = Lighting
-    end
-end
-
--- ==========================================
--- ABA SCRIPTS (VISUAL, EMOTES, PLATAFORMAS)
+-- ABA SCRIPTS (VISUAL, MOVIMENTAÇÃO, ETC)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual")
 
+Tab:CreateButton({
+   Name = "Ativar Shaders by drayko.exe",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
+      Rayfield:Notify({Title = "Shaders", Content = "Script carregado!", Duration = 3})
+   end,
+})
+
+Tab:CreateSection("Movimentação")
+
 Tab:CreateToggle({
-   Name = "Shaders by drayko.exe",
+   Name = "Bhop (Pular ao segurar Espaço)",
    CurrentValue = false,
-   Flag = "ShaderToggle",
+   Flag = "BhopToggle",
    Callback = function(Value)
-      shadersAtivos = Value
-      if Value then
-         applyLighting()
-         for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end
-         shaderConnection = Workspace.DescendantAdded:Connect(processObject)
-         Rayfield:Notify({Title = "Shaders", Content = "Efeitos Rainbow aplicados!", Duration = 3})
-      else
-         if shaderConnection then shaderConnection:Disconnect() end
-         Lighting.Brightness = 1 
-         if Lighting:FindFirstChild("DraykoRainbowSky") then Lighting.DraykoRainbowSky:Destroy() end
-         Rayfield:Notify({Title = "Shaders", Content = "Shaders desativados.", Duration = 3})
-      end
+      bhopAtivo = Value
    end,
 })
 
@@ -153,7 +107,22 @@ SocialTab:CreateButton({
 })
 
 -- ==========================================
--- LÓGICA DE INPUT (PLATAFORMAS)
+-- LÓGICA DO BHOP (PULO PERFEITO)
+-- ==========================================
+RunService.RenderStepped:Connect(function()
+    if bhopAtivo then
+        local character = player.Character
+        if character and character:FindFirstChild("Humanoid") then
+            -- Verifica se o jogador está segurando Espaço e se ele está tocando o chão
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) and character.Humanoid.FloorMaterial ~= Enum.Material.Air then
+                character.Humanoid.Jump = true
+            end
+        end
+    end
+end)
+
+-- ==========================================
+-- LÓGICA DAS PLATAFORMAS (INPUTS)
 -- ==========================================
 local function atualizarVisual()
     for _, parte in pairs(pastaPlataformas:GetChildren()) do
