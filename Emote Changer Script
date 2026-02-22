@@ -1,8 +1,8 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Menu de Modificações | made by @drayko.exe",
-   LoadingTitle = "Carregando scripts...",
+   Name = "Menu de Modificações | @drayko.exe",
+   LoadingTitle = "Carregando script...",
    LoadingSubtitle = "made by drayko >_<",
    ConfigurationSaving = {
       Enabled = false
@@ -91,7 +91,7 @@ Tab:CreateToggle({
 Tab:CreateLabel("E = Spawn | Y = Visível | U = TP Fim")
 
 -- ==========================================
--- ABA SOCIAL
+-- ABA SOCIAL (TikTok & Discord)
 -- ==========================================
 local SocialTab = Window:CreateTab("Social", 4483362458)
 
@@ -100,8 +100,16 @@ SocialTab:CreateSection("by drayko")
 SocialTab:CreateButton({
    Name = "Copiar Discord",
    Callback = function()
-      setclipboard("https://discord.gg/SEU_LINK")
-      Rayfield:Notify({Title = "Sucesso", Content = "Link copiado!", Duration = 2})
+      setclipboard("https://discord.gg/bqgVRCWm")
+      Rayfield:Notify({Title = "Sucesso", Content = "Convite do Discord copiado!", Duration = 3})
+   end,
+})
+
+SocialTab:CreateButton({
+   Name = "TikTok (@drayko.exe)",
+   Callback = function()
+      setclipboard("https://www.tiktok.com/@drayko.exe")
+      Rayfield:Notify({Title = "Sucesso", Content = "Link do TikTok copiado!", Duration = 3})
    end,
 })
 
@@ -109,4 +117,26 @@ SocialTab:CreateButton({
 -- LÓGICA DE INPUT (TECLAS)
 -- ==========================================
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed or not platAtiva
+    if gameProcessed or not platAtiva then return end
+
+    if input.KeyCode == Enum.KeyCode.E then
+        if #pastaPlataformas:GetChildren() > 0 then
+            pastaPlataformas:ClearAllChildren()
+        else
+            criarMapa()
+        end
+    end
+
+    if input.KeyCode == Enum.KeyCode.Y then
+        modoVisivel = not modoVisivel
+        atualizarVisual()
+    end
+
+    if input.KeyCode == Enum.KeyCode.U then
+        if ultimaPlataforma and player.Character then
+            player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+end)
+
+Rayfield:LoadConfiguration()
