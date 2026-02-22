@@ -10,7 +10,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- ==========================================
--- VARIÁVEIS E CONFIGURAÇÕES
+-- VARIÁVEIS GERAIS
 -- ==========================================
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
@@ -18,7 +18,7 @@ local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Controle de Estados
+-- Estados
 local platAtiva = false
 local modoVisivel = false
 local shadersAtivos = false
@@ -29,7 +29,7 @@ local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or In
 pastaPlataformas.Name = "PlataformasInvisiveis"
 
 -- ==========================================
--- FUNÇÕES DE SHADERS (RTX/ILUMINAÇÃO)
+-- FUNÇÕES DE SHADERS (BY DRAYKO.EXE)
 -- ==========================================
 local function processObject(obj)
     if not shadersAtivos then return end
@@ -43,29 +43,40 @@ end
 
 local function applyLighting()
     if not shadersAtivos then return end
+    
     Lighting.Technology = Enum.Technology.Future
     Lighting.Brightness = 2.2
     Lighting.GlobalShadows = true
     Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
     
-    if not Lighting:FindFirstChild("DraykoSky") then
+    -- Aplica Rainbow Skybox
+    if not Lighting:FindFirstChild("DraykoRainbowSky") then
+        for _, oldSky in pairs(Lighting:GetChildren()) do
+            if oldSky:IsA("Sky") then oldSky:Destroy() end
+        end
+        
         local sky = Instance.new("Sky")
-        sky.Name = "DraykoSky"
-        sky.SkyboxUp = "rbxassetid://159067921"
+        sky.Name = "DraykoRainbowSky"
+        sky.SkyboxBk = "rbxassetid://16573649931"
+        sky.SkyboxDn = "rbxassetid://16573649940"
+        sky.SkyboxFt = "rbxassetid://16573649952"
+        sky.SkyboxLf = "rbxassetid://16573649960"
+        sky.SkyboxRt = "rbxassetid://16573649964"
+        sky.SkyboxUp = "rbxassetid://16573649970"
         sky.SunAngularSize = 0
         sky.Parent = Lighting
     end
 end
 
 -- ==========================================
--- ABA SCRIPTS (EMOTES, PLATAFORMAS, SHADERS)
+-- ABA SCRIPTS (VISUAL, EMOTES, PLATAFORMAS)
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
-Tab:CreateSection("Visual & Shaders")
+Tab:CreateSection("Visual")
 
 Tab:CreateToggle({
-   Name = "Ativar Shaders RTX",
+   Name = "Shaders by drayko.exe",
    CurrentValue = false,
    Flag = "ShaderToggle",
    Callback = function(Value)
@@ -74,12 +85,12 @@ Tab:CreateToggle({
          applyLighting()
          for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end
          shaderConnection = Workspace.DescendantAdded:Connect(processObject)
-         Rayfield:Notify({Title = "Shaders", Content = "Efeitos visuais aplicados!", Duration = 3})
+         Rayfield:Notify({Title = "Shaders", Content = "Efeitos Rainbow aplicados!", Duration = 3})
       else
          if shaderConnection then shaderConnection:Disconnect() end
-         Lighting.Brightness = 1 -- Retorna ao padrão aproximado
-         if Lighting:FindFirstChild("DraykoSky") then Lighting.DraykoSky:Destroy() end
-         Rayfield:Notify({Title = "Shaders", Content = "O script parou de processar novos shaders.", Duration = 3})
+         Lighting.Brightness = 1 
+         if Lighting:FindFirstChild("DraykoRainbowSky") then Lighting.DraykoRainbowSky:Destroy() end
+         Rayfield:Notify({Title = "Shaders", Content = "Shaders desativados.", Duration = 3})
       end
    end,
 })
@@ -116,6 +127,8 @@ Tab:CreateToggle({
    end,
 })
 
+Tab:CreateLabel("E = Spawn | Y = Visível | U = TP Fim")
+
 -- ==========================================
 -- ABA SOCIAL
 -- ==========================================
@@ -127,7 +140,7 @@ SocialTab:CreateButton({
    Name = "Copiar Discord",
    Callback = function()
       setclipboard("https://discord.gg/bqgVRCWm")
-      Rayfield:Notify({Title = "Sucesso", Content = "Convite copiado!", Duration = 3})
+      Rayfield:Notify({Title = "Sucesso", Content = "Discord copiado!", Duration = 3})
    end,
 })
 
@@ -140,8 +153,33 @@ SocialTab:CreateButton({
 })
 
 -- ==========================================
--- LÓGICA DE INPUT E LOOP PLATAFORMAS
+-- LÓGICA DE INPUT (PLATAFORMAS)
 -- ==========================================
+local function atualizarVisual()
+    for _, parte in pairs(pastaPlataformas:GetChildren()) do
+        parte.Transparency = modoVisivel and 0.3 or 1
+        parte.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
+    end
+end
+
+local function criarMapa()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local root = character:WaitForChild("HumanoidRootPart")
+    local altura = root.Position.Y - 3
+
+    for x = -500, 500, 8 do
+        for z = -500, 500, 8 do
+            local parte = Instance.new("Part")
+            parte.Size = Vector3.new(8, 1, 8)
+            parte.Position = Vector3.new(x, altura, z)
+            parte.Anchored, parte.CanCollide = true, true
+            parte.Transparency = modoVisivel and 0.3 or 1
+            parte.Parent = pastaPlataformas
+            ultimaPlataforma = parte
+        end
+    end
+end
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not platAtiva then return end
 
@@ -149,31 +187,13 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if #pastaPlataformas:GetChildren() > 0 then
             pastaPlataformas:ClearAllChildren()
         else
-            local character = player.Character
-            if character then
-                local root = character:WaitForChild("HumanoidRootPart")
-                for x = -500, 500, 8 do
-                    for z = -500, 500, 8 do
-                        local p = Instance.new("Part")
-                        p.Size = Vector3.new(8, 1, 8)
-                        p.Position = Vector3.new(x, root.Position.Y - 3, z)
-                        p.Anchored, p.CanCollide = true, true
-                        p.Transparency = modoVisivel and 0.3 or 1
-                        p.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
-                        p.Parent = pastaPlataformas
-                        ultimaPlataforma = p
-                    end
-                end
-            end
+            criarMapa()
         end
     end
 
     if input.KeyCode == Enum.KeyCode.Y then
         modoVisivel = not modoVisivel
-        for _, p in pairs(pastaPlataformas:GetChildren()) do
-            p.Transparency = modoVisivel and 0.3 or 1
-            p.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
-        end
+        atualizarVisual()
     end
 
     if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then
