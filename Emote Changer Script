@@ -1,0 +1,104 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Menu de Modificações",
+   LoadingTitle = "Carregando Scripts...",
+   LoadingSubtitle = "by Gemini",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "GeminiConfigs",
+      FileName = "ModMenu"
+   }
+})
+
+local Tab = Window:CreateTab("Modificações", 4483362458) -- Ícone de engrenagem
+
+-- ==========================================
+-- SEÇÃO DE EMOTES
+-- ==========================================
+local EmotesSection = Tab:CreateSection("Emotes")
+
+Tab:CreateToggle({
+   Name = "Renomear Emotes (Goofy/Bumper/Nostalgia)",
+   CurrentValue = false,
+   Flag = "EmoteToggle",
+   Callback = function(Value)
+      local Emotes = game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Emotes")
+      
+      if Value then
+         -- Ativando: Muda para os nomes personalizados
+         if Emotes:FindFirstChild("WerewolfHowl") then Emotes.WerewolfHowl.Name = "GoofyStride" end
+         if Emotes:FindFirstChild("Griddy") then Emotes.Griddy.Name = "BumperKart" end
+         if Emotes:FindFirstChild("SkateboardStroll") then Emotes.SkateboardStroll.Name = "Nostalgia" end
+         Rayfield:Notify({Title = "Emotes", Content = "Nomes modificados!", Duration = 2})
+      else
+         -- Desativando: Volta para os nomes originais
+         if Emotes:FindFirstChild("GoofyStride") then Emotes.GoofyStride.Name = "WerewolfHowl" end
+         if Emotes:FindFirstChild("BumperKart") then Emotes.BumperKart.Name = "Griddy" end
+         if Emotes:FindFirstChild("Nostalgia") then Emotes.Nostalgia.Name = "SkateboardStroll" end
+         Rayfield:Notify({Title = "Emotes", Content = "Nomes restaurados!", Duration = 2})
+      end
+   end,
+})
+
+-- ==========================================
+-- SEÇÃO DE PLATAFORMAS (TECLA E)
+-- ==========================================
+local PlatSection = Tab:CreateSection("Plataformas")
+
+local UserInputService = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local ativo = false
+local modoVisivel = false
+local ultimaPlataforma = nil
+local pastaPlataformas = workspace:FindFirstChild("PlataformasInvisiveis") or Instance.new("Folder", workspace)
+pastaPlataformas.Name = "PlataformasInvisiveis"
+
+Tab:CreateLabel("Use 'E' para Spawn, 'Y' para Visibilidade, 'U' para TP")
+
+Tab:CreateToggle({
+   Name = "Habilitar Sistema de Teclas (E, Y, U)",
+   CurrentValue = false,
+   Flag = "PlatToggle",
+   Callback = function(Value)
+      ativo = Value
+      if not Value then
+         pastaPlataformas:ClearAllChildren()
+      end
+   end,
+})
+
+-- Lógica das teclas integrada ao Toggle do Rayfield
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or not ativo then return end
+
+    if input.KeyCode == Enum.KeyCode.E then
+        -- Lógica de criar mapa (simplificada para o exemplo)
+        local character = player.Character
+        if character then
+            local root = character:WaitForChild("HumanoidRootPart")
+            local parte = Instance.new("Part")
+            parte.Size = Vector3.new(8, 1, 8)
+            parte.Position = root.Position - Vector3.new(0, 3, 0)
+            parte.Anchored = true
+            parte.Transparency = modoVisivel and 0.3 or 1
+            parte.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
+            parte.Parent = pastaPlataformas
+            ultimaPlataforma = parte
+        end
+    end
+
+    if input.KeyCode == Enum.KeyCode.Y then
+        modoVisivel = not modoVisivel
+        for _, p in pairs(pastaPlataformas:GetChildren()) do
+            p.Transparency = modoVisivel and 0.3 or 1
+            p.Material = modoVisivel and Enum.Material.Neon or Enum.Material.Plastic
+        end
+    end
+
+    if input.KeyCode == Enum.KeyCode.U then
+        if ultimaPlataforma and player.Character then
+            player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+end)
