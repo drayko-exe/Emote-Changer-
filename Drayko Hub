@@ -41,7 +41,6 @@ pastaPlataformas.Name = "PlataformasInvisiveis"
 -- FUNÇÕES DE SUPORTE
 -- ==========================================
 
--- Lógica de Detecção de Chão (By drayko)
 local function IsOnGroundAdvanced()
     local Character = player.Character
     if not Character then return false end
@@ -65,7 +64,6 @@ local function IsOnGroundAdvanced()
     return angle <= MAX_SLOPE_ANGLE
 end
 
--- Função de renomeação para os outros emotes
 local function AdvancedRename(oldName, newName)
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
         if item.Name == oldName then
@@ -81,176 +79,15 @@ local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual (Shaders)")
 
--- NOVO SHADER ADICIONADO AQUI:
+-- NOVO SHADER ADICIONADO (Spongebob Version):
 Tab:CreateButton({
-   Name = "Shaders v3 by drayko",
+   Name = "Spongebob Shaders v4 by drayko",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-Script-v3/refs/heads/main/Shaders%20v3%20by%20%40drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Purple Shaders by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v4-spongebob/refs/heads/main/Shaders%20by%20drayko.exe"))()
    end,
 })
 
 Tab:CreateButton({
-   Name = "Red Shaders by drayko",
+   Name = "Shaders v3 by drayko",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v2-by-drayko.exe/refs/heads/main/shaders%20v2"))()
-   end,
-})
-
-Tab:CreateSection("Customização")
-
-Tab:CreateButton({
-   Name = "Universal Avatar Changer",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/darkdexv2/universalavatarchanger/main/avatarchanger"))()
-   end,
-})
-
-Tab:CreateSection("Movimentação")
-
-Tab:CreateToggle({
-   Name = "Bhop (By drayko)",
-   CurrentValue = false,
-   Flag = "BhopToggle",
-   Callback = function(Value) bhopAtivo = Value end,
-})
-
-Tab:CreateSection("Emotes")
-
-Tab:CreateToggle({
-   Name = "Renomear Emotes",
-   CurrentValue = false,
-   Flag = "EmoteToggle",
-   Callback = function(Value)
-      if Value then
-         pcall(function()
-            -- Lógica solicitada:
-            -- 1. ZombieStride vira Robot
-            -- 2. catjam vira ZombieStride
-            local emotesFolder = ReplicatedStorage:FindFirstChild("Items") and ReplicatedStorage.Items:FindFirstChild("Emotes")
-            
-            if emotesFolder then
-                -- Primeiro muda o original para Robot
-                if emotesFolder:FindFirstChild("ZombieStride") then 
-                    emotesFolder.ZombieStride.Name = "Robot" 
-                end
-                -- Depois muda o catjam para ZombieStride
-                if emotesFolder:FindFirstChild("catjam") then 
-                    emotesFolder.catjam.Name = "ZombieStride" 
-                end
-                
-                -- Outros
-                if emotesFolder:FindFirstChild("Griddy") then emotesFolder.Griddy.Name = "SwagWalk" end
-            end
-            
-            -- Outros via Busca
-            AdvancedRename("WerewolfHowl", "GoofyStride")
-            AdvancedRename("Broom", "BumperKart")
-            AdvancedRename("SkateboardStroll", "Nostalgia")
-            AdvancedRename("RockinStride", "Stride")
-         end)
-         Rayfield:Notify({Title = "Emotes", Content = "CatJam -> Zombie e Zombie -> Robot ativos!", Duration = 2})
-      else
-         pcall(function()
-            -- Restaurando na ordem inversa para evitar conflitos de nomes
-            AdvancedRename("ZombieStride", "catjam")
-            AdvancedRename("Robot", "ZombieStride")
-            
-            AdvancedRename("SwagWalk", "Griddy")
-            AdvancedRename("GoofyStride", "WerewolfHowl")
-            AdvancedRename("BumperKart", "Broom")
-            AdvancedRename("Nostalgia", "SkateboardStroll")
-            AdvancedRename("Stride", "RockinStride")
-         end)
-         Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
-      end
-   end,
-})
-
--- ==========================================
--- ABA: MAPA, AJUSTES E PLATAFORMAS
--- ==========================================
-local MapTab = Window:CreateTab("Mapa", 4483362458)
-MapTab:CreateButton({
-   Name = "Map Changer Brookhaven",
-   Callback = function()
-      local character = player.Character or player.CharacterAdded:Wait()
-      local root = character:WaitForChild("HumanoidRootPart")
-      local MAP_ASSET_ID = 140334759443759
-      root.Anchored = true
-      root.CFrame = CFrame.new(root.Position.X, 15000, root.Position.Z)
-      task.spawn(function()
-          local success, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) end)
-          if success and objs[1] then
-              objs[1].Parent = workspace
-              task.wait(1)
-              local targetPart = objs[1]:FindFirstChildWhichIsA("BasePart", true)
-              root.CFrame = targetPart and CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z) or CFrame.new(0, 15000, 0)
-          end
-          root.Anchored = false
-      end)
-   end,
-})
-
-local ConfigTab = Window:CreateTab("Ajustes", 4483362458)
-ConfigTab:CreateButton({
-   Name = "Abrir FFlag Editor",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/Real-Link/Codex/main/FFlagEditor.lua"))()
-   end,
-})
-
-local PlatTab = Window:CreateTab("Plataformas", 4483362458)
-PlatTab:CreateToggle({
-   Name = "Habilitar Teclas (E, Y, U)",
-   CurrentValue = false,
-   Callback = function(Value)
-      platAtiva = Value
-      if not Value then pastaPlataformas:ClearAllChildren() end
-   end,
-})
-
-local SocialTab = Window:CreateTab("Social", 4483362458)
-SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
-SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
-
--- Loop Heartbeat (Bhop By drayko e Plataformas)
-RunService.Heartbeat:Connect(function()
-    if not bhopAtivo then return end
-    local Char = player.Character
-    if Char and Char:FindFirstChild("Humanoid") and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-        local Hum = Char.Humanoid
-        if IsOnGroundAdvanced() and (tick() - LastJump) > JUMP_COOLDOWN then
-            Hum:ChangeState(Enum.HumanoidStateType.Jumping)
-            LastJump = tick()
-        end
-    end
-end)
-
-local function criarMapa()
-    local root = player.Character:WaitForChild("HumanoidRootPart")
-    local altura = root.Position.Y - 3
-    for x = -500, 500, 12 do
-        for z = -500, 500, 12 do
-            local p = Instance.new("Part", pastaPlataformas)
-            p.Size, p.Position, p.Anchored = Vector3.new(12, 1, 12), Vector3.new(x, altura, z), true
-            p.Transparency = modoVisivel and 0.3 or 1
-            ultimaPlataforma = p
-        end
-    end
-end
-
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp or not platAtiva then return end
-    if input.KeyCode == Enum.KeyCode.E then if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end end
-    if input.KeyCode == Enum.KeyCode.Y then modoVisivel = not modoVisivel for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end end
-    if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0) end
-end)
-
-Rayfield:LoadConfiguration()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-Script-v3/refs/heads/main/Shaders%20v3%20by%20%40drayko.exe"))
