@@ -234,7 +234,7 @@ Tab:CreateToggle({
 })
 
 Tab:CreateToggle({
-    Name = "Gravidade Zero (Tecla 3)",
+    Name = "Trimp Assist",
     CurrentValue = false,
     Callback = function(Value) gravidadeZeroAtiva = Value end,
 })
@@ -280,28 +280,37 @@ Tab:CreateToggle({
 })
 
 -- ==========================================
--- LÓGICA GRAVIDADE ZERO (By drayko)
+-- LÓGICA TRIMP ASSIST (Otimizada para Rampas Retas)
 -- ==========================================
 local b_antiGrav = Instance.new("BodyForce")
+local boostPronto = true
 
 RunService.RenderStepped:Connect(function()
     local char = player.Character
     if gravidadeZeroAtiva and char and char:FindFirstChild("HumanoidRootPart") then
         local hrp = char.HumanoidRootPart
-        b_antiGrav.Parent = hrp
+        local hum = char:FindFirstChildOfClass("Humanoid")
         
-        local massaTotal = 0
-        for _, parte in pairs(char:GetChildren()) do
-            if parte:IsA("BasePart") then
-                massaTotal = massaTotal + parte:GetMass()
-            end
+        -- Velocidade horizontal e detecção de chão
+        local horizontalVel = Vector2.new(hrp.AssemblyLinearVelocity.X, hrp.AssemblyLinearVelocity.Z).Magnitude
+        local estaNoChao = hum and hum.FloorMaterial ~= Enum.Material.Air
+
+        -- SENSIBILIDADE AUMENTADA: Detecta inclinações mínimas (Y > 0.1)
+        -- Isso permite que rampas retas/baixas ativem o impulso
+        if estaNoChao and horizontalVel > 12 and hrp.AssemblyLinearVelocity.Y > 0.1 and boostPronto then
+            boostPronto = false
+            
+            -- Aplica impulso ÚNICO de 120
+            hrp.AssemblyLinearVelocity = Vector3.new(hrp.AssemblyLinearVelocity.X, 120, hrp.AssemblyLinearVelocity.Z)
+            
+            -- Cooldown para estabilizar a física
+            task.delay(1.2, function()
+                boostPronto = true
+            end)
         end
-        
-        b_antiGrav.Force = Vector3.new(0, massaTotal * workspace.Gravity, 0)
-    else
-        b_antiGrav.Force = Vector3.new(0, 0, 0)
-        b_antiGrav.Parent = nil
     end
+    b_antiGrav.Force = Vector3.new(0, 0, 0)
+    b_antiGrav.Parent = nil
 end)
 
 -- ==========================================
@@ -379,23 +388,6 @@ end
 
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
-    
-    -- Tecla 3: Ativar/Desativar Gravidade Zero com Impulso
-    if input.KeyCode == Enum.KeyCode.Three then
-        gravidadeZeroAtiva = not gravidadeZeroAtiva
-        
-        -- Lógica de Impulso antes de flutuar
-        if gravidadeZeroAtiva then
-            local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                -- Aplica um impulso médio/grande para cima (85 é o valor da força)
-                char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(char.HumanoidRootPart.AssemblyLinearVelocity.X, 85, char.HumanoidRootPart.AssemblyLinearVelocity.Z)
-            end
-        end
-        
-        Rayfield:Notify({Title = "Movimentação", Content = gravidadeZeroAtiva and "Impulso Ativado + Gravidade Zero!" or "Gravidade Normal.", Duration = 1.5})
-    end
-
     if not platAtiva then return end
     if input.KeyCode == Enum.KeyCode.E then if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end end
     if input.KeyCode == Enum.KeyCode.Y then modoVisivel = not modoVisivel for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end end
