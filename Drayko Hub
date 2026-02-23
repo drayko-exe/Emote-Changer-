@@ -21,6 +21,8 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
 local bhopAtivo = false
@@ -41,31 +43,24 @@ pastaPlataformas.Name = "PlataformasInvisiveis"
 -- FUNÇÕES DE SUPORTE
 -- ==========================================
 
--- Lógica de Detecção de Chão (By drayko)
 local function IsOnGroundAdvanced()
     local Character = player.Character
     if not Character then return false end
     local Humanoid = Character:FindFirstChildOfClass("Humanoid")
     local HRP = Character:FindFirstChild("HumanoidRootPart")
-    
     if not Humanoid or not HRP or Humanoid.Health <= 0 then return false end
-
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {Character}
-    
     local rayOrigin = HRP.Position
     local rayDirection = Vector3.new(0, -GROUND_CHECK_DISTANCE, 0)
     local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
-
     if not raycastResult then return false end
-
     local surfaceNormal = raycastResult.Normal
     local angle = math.deg(math.acos(surfaceNormal:Dot(Vector3.new(0, 1, 0))))
     return angle <= MAX_SLOPE_ANGLE
 end
 
--- Função de renomeação para os outros emotes
 local function AdvancedRename(oldName, newName)
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
         if item.Name == oldName then
@@ -80,6 +75,71 @@ end
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual (Shaders)")
+
+-- NOVO: Shaders of drayko (Script fornecido)
+Tab:CreateButton({
+   Name = "✨ Shaders of drayko (Special)",
+   Callback = function()
+      local assetId = 95940878862689
+      
+      local function processObject(obj)
+          if obj:IsA("BasePart") then
+              obj.Material = Enum.Material.SmoothPlastic
+              if obj.Transparency == 0 then obj.Reflectance = 0.6 end
+          end
+      end
+
+      task.spawn(function()
+          for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end
+      end)
+
+      Workspace.DescendantAdded:Connect(processObject)
+
+      local function applyLighting()
+          for _, obj in pairs(Lighting:GetChildren()) do
+              if obj:IsA("Sky") or obj:IsA("BloomEffect") or obj:IsA("Atmosphere") or obj:IsA("Clouds") then obj:Destroy() end
+          end
+          pcall(function()
+              local objects = game:GetObjects("rbxassetid://" .. assetId)
+              for _, item in ipairs(objects) do item.Parent = Lighting end
+          end)
+          Lighting.Technology = Enum.Technology.Future
+          Lighting.Brightness = 2.2
+          Lighting.GlobalShadows = true
+          Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
+          if not Lighting:FindFirstChildOfClass("Sky") then
+              local sky = Instance.new("Sky", Lighting)
+              sky.SkyboxUp = "rbxassetid://159067921"
+              sky.SunAngularSize = 0
+          end
+      end
+
+      applyLighting()
+      Lighting.Changed:Connect(function(prop)
+          if prop == "Brightness" or prop == "ClockTime" then
+              task.wait(1)
+              if Lighting.Brightness ~= 2.2 then applyLighting() end
+          end
+      end)
+
+      local function addOutline(character)
+          if not character then return end
+          character:WaitForChild("Humanoid", 10)
+          for _, old in pairs(character:GetChildren()) do if old:IsA("Highlight") then old:Destroy() end end
+          local highlight = Instance.new("Highlight")
+          highlight.Name = "SkinOutline"
+          highlight.FillTransparency = 1
+          highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+          highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+          highlight.Parent = character
+      end
+
+      player.CharacterAdded:Connect(addOutline)
+      if player.Character then addOutline(player.Character) end
+      
+      Rayfield:Notify({Title = "Shaders", Content = "Shaders of drayko ativados com sucesso!", Duration = 3})
+   end,
+})
 
 Tab:CreateButton({
    Name = "Rainbow Shaders v6 by drayko",
@@ -159,12 +219,8 @@ Tab:CreateToggle({
          pcall(function()
             local emotesFolder = ReplicatedStorage:FindFirstChild("Items") and ReplicatedStorage.Items:FindFirstChild("Emotes")
             if emotesFolder then
-                if emotesFolder:FindFirstChild("ZombieStride") then 
-                    emotesFolder.ZombieStride.Name = "Robot" 
-                end
-                if emotesFolder:FindFirstChild("catjam") then 
-                    emotesFolder.catjam.Name = "ZombieStride" 
-                end
+                if emotesFolder:FindFirstChild("ZombieStride") then emotesFolder.ZombieStride.Name = "Robot" end
+                if emotesFolder:FindFirstChild("catjam") then emotesFolder.catjam.Name = "ZombieStride" end
                 if emotesFolder:FindFirstChild("Griddy") then emotesFolder.Griddy.Name = "SwagWalk" end
             end
             AdvancedRename("WerewolfHowl", "GoofyStride")
@@ -235,7 +291,7 @@ local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
--- Loop Heartbeat (Bhop By drayko e Plataformas)
+-- Loop Heartbeat (Bhop Original By drayko)
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
     local Char = player.Character
