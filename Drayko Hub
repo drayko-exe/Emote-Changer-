@@ -81,6 +81,14 @@ local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual (Shaders)")
 
+-- NOVO SHADER ADICIONADO AQUI:
+Tab:CreateButton({
+   Name = "Shaders v3 by drayko",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-Script-v3/refs/heads/main/Shaders%20v3%20by%20%40drayko.exe"))()
+   end,
+})
+
 Tab:CreateButton({
    Name = "Purple Shaders by drayko",
    Callback = function()
