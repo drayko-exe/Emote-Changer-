@@ -28,6 +28,7 @@ local player = Players.LocalPlayer
 local bhopAtivo = false
 local platAtiva = false
 local modoVisivel = false
+local gravidadeZeroAtiva = false
 local ultimaPlataforma = nil
 local LastJump = 0
 
@@ -83,7 +84,6 @@ local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual (Shaders)")
 
--- NOVO SHADER ADICIONADO ABAIXO:
 Tab:CreateButton({
    Name = "Shaders of drayko",
    Callback = function()
@@ -233,6 +233,12 @@ Tab:CreateToggle({
    Callback = function(Value) bhopAtivo = Value end,
 })
 
+Tab:CreateToggle({
+    Name = "Gravidade Zero (Tecla 3)",
+    CurrentValue = false,
+    Callback = function(Value) gravidadeZeroAtiva = Value end,
+})
+
 Tab:CreateSection("Emotes")
 
 Tab:CreateToggle({
@@ -272,6 +278,31 @@ Tab:CreateToggle({
       end
    end,
 })
+
+-- ==========================================
+-- LÓGICA GRAVIDADE ZERO (By drayko)
+-- ==========================================
+local b_antiGrav = Instance.new("BodyForce")
+
+RunService.RenderStepped:Connect(function()
+    local char = player.Character
+    if gravidadeZeroAtiva and char and char:FindFirstChild("HumanoidRootPart") then
+        local hrp = char.HumanoidRootPart
+        b_antiGrav.Parent = hrp
+        
+        local massaTotal = 0
+        for _, parte in pairs(char:GetChildren()) do
+            if parte:IsA("BasePart") then
+                massaTotal = massaTotal + parte:GetMass()
+            end
+        end
+        
+        b_antiGrav.Force = Vector3.new(0, massaTotal * workspace.Gravity, 0)
+    else
+        b_antiGrav.Force = Vector3.new(0, 0, 0)
+        b_antiGrav.Parent = nil
+    end
+end)
 
 -- ==========================================
 -- ABA: MAPA, AJUSTES E PLATAFORMAS
@@ -347,7 +378,25 @@ local function criarMapa()
 end
 
 UserInputService.InputBegan:Connect(function(input, gp)
-    if gp or not platAtiva then return end
+    if gp then return end
+    
+    -- Tecla 3: Ativar/Desativar Gravidade Zero com Impulso
+    if input.KeyCode == Enum.KeyCode.Three then
+        gravidadeZeroAtiva = not gravidadeZeroAtiva
+        
+        -- Lógica de Impulso antes de flutuar
+        if gravidadeZeroAtiva then
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                -- Aplica um impulso médio/grande para cima (85 é o valor da força)
+                char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(char.HumanoidRootPart.AssemblyLinearVelocity.X, 85, char.HumanoidRootPart.AssemblyLinearVelocity.Z)
+            end
+        end
+        
+        Rayfield:Notify({Title = "Movimentação", Content = gravidadeZeroAtiva and "Impulso Ativado + Gravidade Zero!" or "Gravidade Normal.", Duration = 1.5})
+    end
+
+    if not platAtiva then return end
     if input.KeyCode == Enum.KeyCode.E then if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end end
     if input.KeyCode == Enum.KeyCode.Y then modoVisivel = not modoVisivel for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end end
     if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0) end
