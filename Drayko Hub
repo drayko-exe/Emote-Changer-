@@ -21,7 +21,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
 
 local bhopAtivo = false
@@ -83,7 +82,14 @@ local Tab = Window:CreateTab("Scripts", 4483362458)
 Tab:CreateSection("Visual (Shaders)")
 
 Tab:CreateButton({
-   Name = "Rainbow Shaders v5 by drayko",
+   Name = "Rainbow Shaders v6 by drayko",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-v6/refs/heads/main/made%20by%20me"))()
+   end,
+})
+
+Tab:CreateButton({
+   Name = "Blue Nebula Shaders v5 by drayko",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shadeers-v5/refs/heads/main/by%20drayko"))()
    end,
@@ -104,6 +110,13 @@ Tab:CreateButton({
 })
 
 Tab:CreateButton({
+   Name = "Shaders v3 by drayko",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-Script-v3/refs/heads/main/Shaders%20v3%20by%20%40drayko.exe"))()
+   end,
+})
+
+Tab:CreateButton({
    Name = "Purple Shaders by drayko",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
@@ -114,13 +127,6 @@ Tab:CreateButton({
    Name = "Red Shaders by drayko",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v2-by-drayko.exe/refs/heads/main/shaders%20v2"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Shaders v3 by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-Script-v3/refs/heads/main/Shaders%20v3%20by%20%40drayko.exe"))()
    end,
 })
 
@@ -208,28 +214,6 @@ MapTab:CreateButton({
 })
 
 local ConfigTab = Window:CreateTab("Ajustes", 4483362458)
-
-ConfigTab:CreateSection("Fog Changer")
-ConfigTab:CreateButton({
-   Name = "Ativar Sistema de Fog",
-   Callback = function()
-       local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
-       if atmo then atmo:Destroy() end
-       Lighting.FogStart = 0
-       Lighting.FogEnd = 3000
-   end,
-})
-ConfigTab:CreateColorPicker({
-    Name = "Cor da Neblina",
-    Color = Color3.fromRGB(192, 192, 192),
-    Callback = function(Value) Lighting.FogColor = Value end
-})
-ConfigTab:CreateSlider({
-   Name = "Intensidade da Neblina (Fog End)",
-   Min = 100, Max = 10000, CurrentValue = 3000,
-   Callback = function(Value) Lighting.FogEnd = Value end,
-})
-
 ConfigTab:CreateButton({
    Name = "Abrir FFlag Editor",
    Callback = function()
@@ -251,7 +235,7 @@ local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
--- Loop Heartbeat (Bhop Original By drayko)
+-- Loop Heartbeat (Bhop By drayko e Plataformas)
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
     local Char = player.Character
