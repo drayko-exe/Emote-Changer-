@@ -29,7 +29,6 @@ local modoVisivel = false
 local ultimaPlataforma = nil
 local LastJump = 0
 
--- Configurações de Movimentação (By drayko)
 local JUMP_COOLDOWN = 0.15
 local GROUND_CHECK_DISTANCE = 3.5
 local MAX_SLOPE_ANGLE = 45
@@ -46,7 +45,6 @@ local function IsOnGroundAdvanced()
     if not Character then return false end
     local Humanoid = Character:FindFirstChildOfClass("Humanoid")
     local HRP = Character:FindFirstChild("HumanoidRootPart")
-    
     if not Humanoid or not HRP or Humanoid.Health <= 0 then return false end
 
     local raycastParams = RaycastParams.new()
@@ -58,7 +56,6 @@ local function IsOnGroundAdvanced()
     local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
 
     if not raycastResult then return false end
-
     local surfaceNormal = raycastResult.Normal
     local angle = math.deg(math.acos(surfaceNormal:Dot(Vector3.new(0, 1, 0))))
     return angle <= MAX_SLOPE_ANGLE
@@ -66,9 +63,7 @@ end
 
 local function AdvancedRename(oldName, newName)
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
-        if item.Name == oldName then
-            item.Name = newName
-        end
+        if item.Name == oldName then item.Name = newName end
     end
 end
 
@@ -79,7 +74,14 @@ local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual (Shaders)")
 
--- NOVO SHADER BOB ESPONJA
+-- NOVO SHADER V5 ADICIONADO
+Tab:CreateButton({
+   Name = "Shaders v5 by drayko 💎",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shadeers-v5/refs/heads/main/by%20drayko"))()
+   end,
+})
+
 Tab:CreateButton({
    Name = "SpongeBob Shaders 🧽",
    Callback = function()
@@ -146,24 +148,21 @@ Tab:CreateToggle({
             AdvancedRename("SkateboardStroll", "Nostalgia")
             AdvancedRename("RockinStride", "Stride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "CatJam -> Zombie e Zombie -> Robot ativos!", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "Ativados!", Duration = 2})
       else
          pcall(function()
             AdvancedRename("ZombieStride", "catjam")
             AdvancedRename("Robot", "ZombieStride")
             AdvancedRename("SwagWalk", "Griddy")
-            AdvancedRename("GoofyStride", "WerewolfHowl")
-            AdvancedRename("BumperKart", "Broom")
-            AdvancedRename("Nostalgia", "SkateboardStroll")
-            AdvancedRename("Stride", "RockinStride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "Restaurados.", Duration = 2})
       end
    end,
 })
 
+-- [O resto do script de Mapa, Ajustes e Heartbeat continua o mesmo]
 -- ==========================================
--- ABA: MAPA, AJUSTES E PLATAFORMAS
+-- ABA: MAPA E PLATAFORMAS
 -- ==========================================
 local MapTab = Window:CreateTab("Mapa", 4483362458)
 MapTab:CreateButton({
@@ -209,7 +208,6 @@ local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
--- Loop Heartbeat
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
     local Char = player.Character
