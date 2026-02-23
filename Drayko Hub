@@ -21,6 +21,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
 local player = Players.LocalPlayer
 
 local bhopAtivo = false
@@ -74,7 +75,56 @@ local Tab = Window:CreateTab("Scripts", 4483362458)
 
 Tab:CreateSection("Visual (Shaders)")
 
--- NOVO SHADER V5 ADICIONADO
+-- NOVO SHADER ULTRA RTX (O que você mandou agora)
+Tab:CreateButton({
+   Name = "Ultra RTX Shaders (Future) 🌟",
+   Callback = function()
+      -- Lógica do Shader de Transformação
+      local function processObject(obj)
+          if obj:IsA("BasePart") then
+              obj.Material = Enum.Material.SmoothPlastic
+              if obj.Transparency == 0 then obj.Reflectance = 0.6 end
+          end
+      end
+
+      task.spawn(function()
+          for _, obj in pairs(workspace:GetDescendants()) do processObject(obj) end
+      end)
+
+      workspace.DescendantAdded:Connect(processObject)
+
+      local function applyLighting()
+          for _, obj in pairs(Lighting:GetChildren()) do
+              if obj:IsA("Sky") or obj:IsA("BloomEffect") or obj:IsA("Atmosphere") or obj:IsA("Clouds") then obj:Destroy() end
+          end
+          pcall(function()
+              local objects = game:GetObjects("rbxassetid://16573649975")
+              for _, item in ipairs(objects) do item.Parent = Lighting end
+          end)
+          Lighting.Technology = Enum.Technology.Future
+          Lighting.Brightness = 2.2
+          Lighting.GlobalShadows = true
+          Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
+      end
+
+      applyLighting()
+      
+      -- Outline Personagem
+      local function addOutline(character)
+          if not character then return end
+          local highlight = Instance.new("Highlight")
+          highlight.Name = "SkinOutline"
+          highlight.FillTransparency = 1
+          highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+          highlight.Parent = character
+      end
+      player.CharacterAdded:Connect(addOutline)
+      if player.Character then addOutline(player.Character) end
+
+      Rayfield:Notify({Title = "Shaders", Content = "Ultra RTX Ativado com Sucesso!", Duration = 3})
+   end,
+})
+
 Tab:CreateButton({
    Name = "Shaders v5 by drayko 💎",
    Callback = function()
@@ -100,13 +150,6 @@ Tab:CreateButton({
    Name = "Purple Shaders by drayko",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Red Shaders by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v2-by-drayko.exe/refs/heads/main/shaders%20v2"))()
    end,
 })
 
@@ -153,16 +196,14 @@ Tab:CreateToggle({
          pcall(function()
             AdvancedRename("ZombieStride", "catjam")
             AdvancedRename("Robot", "ZombieStride")
-            AdvancedRename("SwagWalk", "Griddy")
          end)
          Rayfield:Notify({Title = "Emotes", Content = "Restaurados.", Duration = 2})
       end
    end,
 })
 
--- [O resto do script de Mapa, Ajustes e Heartbeat continua o mesmo]
 -- ==========================================
--- ABA: MAPA E PLATAFORMAS
+-- ABA: MAPA, AJUSTES E PLATAFORMAS
 -- ==========================================
 local MapTab = Window:CreateTab("Mapa", 4483362458)
 MapTab:CreateButton({
@@ -208,6 +249,7 @@ local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
 
+-- Loop Heartbeat
 RunService.Heartbeat:Connect(function()
     if not bhopAtivo then return end
     local Char = player.Character
