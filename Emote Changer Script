@@ -51,7 +51,7 @@ local function IsOnGroundAdvanced()
     if not Humanoid or not HRP or Humanoid.Health <= 0 then return false end
 
     local raycastParams = RaycastParams.new()
-    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {Character}
     
     local rayOrigin = HRP.Position
@@ -122,21 +122,39 @@ Tab:CreateToggle({
    Callback = function(Value)
       if Value then
          pcall(function()
-            -- Alteração direta solicitada
-            game:GetService("ReplicatedStorage").Items.Emotes.ZombieStride.Name = "SwagWalk"
-            game:GetService("ReplicatedStorage").Items.Emotes.Griddy.Name = "SwagWalk"
+            -- Lógica solicitada:
+            -- 1. ZombieStride vira Robot
+            -- 2. catjam vira ZombieStride
+            local emotesFolder = ReplicatedStorage:FindFirstChild("Items") and ReplicatedStorage.Items:FindFirstChild("Emotes")
             
-            -- Outros (Busca)
+            if emotesFolder then
+                -- Primeiro muda o original para Robot
+                if emotesFolder:FindFirstChild("ZombieStride") then 
+                    emotesFolder.ZombieStride.Name = "Robot" 
+                end
+                -- Depois muda o catjam para ZombieStride
+                if emotesFolder:FindFirstChild("catjam") then 
+                    emotesFolder.catjam.Name = "ZombieStride" 
+                end
+                
+                -- Outros
+                if emotesFolder:FindFirstChild("Griddy") then emotesFolder.Griddy.Name = "SwagWalk" end
+            end
+            
+            -- Outros via Busca
             AdvancedRename("WerewolfHowl", "GoofyStride")
             AdvancedRename("Broom", "BumperKart")
             AdvancedRename("SkateboardStroll", "Nostalgia")
             AdvancedRename("RockinStride", "Stride")
          end)
-         Rayfield:Notify({Title = "Emotes", Content = "Emotes atualizados com sucesso!", Duration = 2})
+         Rayfield:Notify({Title = "Emotes", Content = "CatJam -> Zombie e Zombie -> Robot ativos!", Duration = 2})
       else
          pcall(function()
-            -- Restaurando
-            AdvancedRename("SwagWalk", "ZombieStride")
+            -- Restaurando na ordem inversa para evitar conflitos de nomes
+            AdvancedRename("ZombieStride", "catjam")
+            AdvancedRename("Robot", "ZombieStride")
+            
+            AdvancedRename("SwagWalk", "Griddy")
             AdvancedRename("GoofyStride", "WerewolfHowl")
             AdvancedRename("BumperKart", "Broom")
             AdvancedRename("Nostalgia", "SkateboardStroll")
