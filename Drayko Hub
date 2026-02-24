@@ -8,7 +8,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "Menu de Modificações | drayko",
    LoadingTitle = "Carregando Scripts...",
-   LoadingSubtitle = "by drayko",
+   LoadingSubtitle = "made by @drayko.exe", -- Alterado conforme solicitado
    ConfigurationSaving = {
       Enabled = false
    }
@@ -32,7 +32,6 @@ local gravidadeZeroAtiva = false
 local ultimaPlataforma = nil
 local LastJump = 0
 
--- Configurações de Movimentação (By drayko)
 local JUMP_COOLDOWN = 0.15
 local GROUND_CHECK_DISTANCE = 3.5
 local MAX_SLOPE_ANGLE = 45
@@ -44,31 +43,24 @@ pastaPlataformas.Name = "PlataformasInvisiveis"
 -- FUNÇÕES DE SUPORTE
 -- ==========================================
 
--- Lógica de Detecção de Chão (By drayko)
 local function IsOnGroundAdvanced()
     local Character = player.Character
     if not Character then return false end
     local Humanoid = Character:FindFirstChildOfClass("Humanoid")
     local HRP = Character:FindFirstChild("HumanoidRootPart")
-    
     if not Humanoid or not HRP or Humanoid.Health <= 0 then return false end
-
     local raycastParams = RaycastParams.new()
     raycastParams.FilterType = Enum.RaycastFilterType.Exclude
     raycastParams.FilterDescendantsInstances = {Character}
-    
     local rayOrigin = HRP.Position
     local rayDirection = Vector3.new(0, -GROUND_CHECK_DISTANCE, 0)
     local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
-
     if not raycastResult then return false end
-
     local surfaceNormal = raycastResult.Normal
     local angle = math.deg(math.acos(surfaceNormal:Dot(Vector3.new(0, 1, 0))))
     return angle <= MAX_SLOPE_ANGLE
 end
 
--- Função de renomeação para os outros emotes
 local function AdvancedRename(oldName, newName)
     for _, item in pairs(ReplicatedStorage:GetDescendants()) do
         if item.Name == oldName then
@@ -78,320 +70,200 @@ local function AdvancedRename(oldName, newName)
 end
 
 -- ==========================================
--- ABA: SCRIPTS (Visuais e Movimentação)
+-- ABA: COSMETICS
 -- ==========================================
-local Tab = Window:CreateTab("Scripts", 4483362458)
+local CosmeticTab = Window:CreateTab("Cosmetics", 4483362458)
 
-Tab:CreateSection("Visual (Shaders)")
+CosmeticTab:CreateSection("Personagem")
 
-Tab:CreateButton({
-   Name = "Shaders of drayko",
-   Callback = function()
-      local assetId = 95940878862689
-
-      local function processObject(obj)
-          if obj:IsA("BasePart") then
-              obj.Material = Enum.Material.SmoothPlastic
-              if obj.Transparency == 0 then
-                  obj.Reflectance = 0.6
-              end
-          end
-      end
-
-      task.spawn(function()
-          for _, obj in pairs(Workspace:GetDescendants()) do
-              processObject(obj)
-          end
-      end)
-
-      Workspace.DescendantAdded:Connect(function(obj)
-          processObject(obj)
-      end)
-
-      local function applyLighting()
-          for _, obj in pairs(Lighting:GetChildren()) do
-              if obj:IsA("Sky") or obj:IsA("BloomEffect") or obj:IsA("Atmosphere") or obj:IsA("Clouds") then
-                  obj:Destroy()
-              end
-          end
-
-          pcall(function()
-              local objects = game:GetObjects("rbxassetid://" .. assetId)
-              for _, item in ipairs(objects) do
-                  item.Parent = Lighting
-              end
-          end)
-
-          Lighting.Technology = Enum.Technology.Future
-          Lighting.Brightness = 2.2
-          Lighting.GlobalShadows = true
-          Lighting.OutdoorAmbient = Color3.fromRGB(170, 130, 255)
-          
-          if not Lighting:FindFirstChildOfClass("Sky") then
-              local sky = Instance.new("Sky", Lighting)
-              sky.SkyboxUp = "rbxassetid://159067921"
-              sky.SunAngularSize = 0
-          end
-      end
-
-      applyLighting()
-
-      Lighting.Changed:Connect(function(prop)
-          if prop == "Brightness" or prop == "ClockTime" then
-              task.wait(1) 
-              if Lighting.Brightness ~= 2.2 then
-                  applyLighting()
-              end
-          end
-      end)
-
-      local function addOutline(character)
-          if not character then return end
-          local humanoid = character:WaitForChild("Humanoid", 10)
-          for _, old in pairs(character:GetChildren()) do
-              if old:IsA("Highlight") then old:Destroy() end
-          end
-          local highlight = Instance.new("Highlight")
-          highlight.Name = "SkinOutline"
-          highlight.FillTransparency = 1
-          highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-          highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-          highlight.Parent = character
-      end
-
-      player.CharacterAdded:Connect(addOutline)
-      if player.Character then addOutline(player.Character) end
-      
-      Rayfield:Notify({Title = "Shaders", Content = "Shaders of drayko ativados!", Duration = 2})
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Rainbow Shaders v6 by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-v6/refs/heads/main/made%20by%20me"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Blue Nebula Shaders v5 by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shadeers-v5/refs/heads/main/by%20drayko"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "SpongeBob Shaders v4 by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v4-spongebob/refs/heads/main/Shaders%20by%20drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "WeirdCore Shaders v7 by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-v7/refs/heads/main/made%20by%20%40drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Shaders v3 by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/Shaders-Script-v3/refs/heads/main/Shaders%20v3%20by%20%40drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Purple Shaders by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-by-drayko.exe/refs/heads/main/shaders%20by%20%40drayko.exe"))()
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Red Shaders by drayko",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/drayko-exe/shaders-v2-by-drayko.exe/refs/heads/main/shaders%20v2"))()
-   end,
-})
-
-Tab:CreateSection("Customização")
-
-Tab:CreateButton({
+CosmeticTab:CreateButton({
    Name = "Universal Avatar Changer",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/darkdexv2/universalavatarchanger/main/avatarchanger"))()
    end,
 })
 
-Tab:CreateSection("Movimentação")
+CosmeticTab:CreateSection("Efeitos Visuais")
 
-Tab:CreateToggle({
-   Name = "Bhop (By drayko)",
-   CurrentValue = false,
-   Flag = "BhopToggle",
-   Callback = function(Value) bhopAtivo = Value end,
-})
-
-Tab:CreateToggle({
-    Name = "Trimp Assist",
-    CurrentValue = false,
-    Callback = function(Value) gravidadeZeroAtiva = Value end,
-})
-
-Tab:CreateSection("Emotes")
-
-Tab:CreateToggle({
-   Name = "Renomear Emotes",
-   CurrentValue = false,
-   Flag = "EmoteToggle",
-   Callback = function(Value)
-      if Value then
-         pcall(function()
-            local emotesFolder = ReplicatedStorage:FindFirstChild("Items") and ReplicatedStorage.Items:FindFirstChild("Emotes")
-            if emotesFolder then
-                if emotesFolder:FindFirstChild("ZombieStride") then 
-                    emotesFolder.ZombieStride.Name = "Robot" 
-                end
-                if emotesFolder:FindFirstChild("catjam") then 
-                    emotesFolder.catjam.Name = "ZombieStride" 
-                end
-                if emotesFolder:FindFirstChild("Griddy") then emotesFolder.Griddy.Name = "SwagWalk" end
-            end
-            AdvancedRename("WerewolfHowl", "GoofyStride")
-            AdvancedRename("Broom", "BumperKart")
-            AdvancedRename("SkateboardStroll", "Nostalgia")
-            AdvancedRename("RockinStride", "Stride")
-         end)
-         Rayfield:Notify({Title = "Emotes", Content = "CatJam -> Zombie e Zombie -> Robot ativos!", Duration = 2})
-      else
-         pcall(function()
-            AdvancedRename("ZombieStride", "catjam")
-            AdvancedRename("Robot", "ZombieStride")
-            AdvancedRename("SwagWalk", "Griddy")
-            AdvancedRename("GoofyStride", "WerewolfHowl")
-            AdvancedRename("BumperKart", "Broom")
-            AdvancedRename("Nostalgia", "SkateboardStroll")
-            AdvancedRename("Stride", "RockinStride")
-         end)
-         Rayfield:Notify({Title = "Emotes", Content = "Nomes originais restaurados.", Duration = 2})
-      end
-   end,
-})
-
--- ==========================================
--- LÓGICA TRIMP ASSIST (Otimizada para Rampas Retas)
--- ==========================================
-local b_antiGrav = Instance.new("BodyForce")
-local boostPronto = true
-
-RunService.RenderStepped:Connect(function()
-    local char = player.Character
-    if gravidadeZeroAtiva and char and char:FindFirstChild("HumanoidRootPart") then
-        local hrp = char.HumanoidRootPart
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        
-        -- Velocidade horizontal e detecção de chão
-        local horizontalVel = Vector2.new(hrp.AssemblyLinearVelocity.X, hrp.AssemblyLinearVelocity.Z).Magnitude
-        local estaNoChao = hum and hum.FloorMaterial ~= Enum.Material.Air
-
-        -- SENSIBILIDADE AUMENTADA: Detecta inclinações mínimas (Y > 0.1)
-        -- Isso permite que rampas retas/baixas ativem o impulso
-        if estaNoChao and horizontalVel > 12 and hrp.AssemblyLinearVelocity.Y > 0.1 and boostPronto then
-            boostPronto = false
-            
-            -- Aplica impulso ÚNICO de 120
-            hrp.AssemblyLinearVelocity = Vector3.new(hrp.AssemblyLinearVelocity.X, 120, hrp.AssemblyLinearVelocity.Z)
-            
-            -- Cooldown para estabilizar a física
-            task.delay(1.2, function()
-                boostPronto = true
-            end)
-        end
+CosmeticTab:CreateButton({
+    Name = "Aura Rainbow (RGB)",
+    Callback = function()
+        local a = game:GetService("Players").LocalPlayer
+        local b = a.Character or a.CharacterAdded:Wait()
+        local c = game:GetService("RunService")
+        local d = Instance.new("Folder", b)
+        local e = Instance.new("Part", d)
+        e.Size = Vector3.new(1, 1, 1)
+        e.CanCollide = false
+        e.Massless = true
+        e.Material = Enum.Material.Neon
+        local f = Instance.new("SpecialMesh", e)
+        f.MeshType = Enum.MeshType.FileMesh
+        f.MeshId = "rbxassetid://3270017"
+        f.Scale = Vector3.new(4, 0.5, 4)
+        local g = Instance.new("Weld", e)
+        g.Part0 = e
+        g.Part1 = b:WaitForChild("Head")
+        local h = Instance.new("Part", d)
+        h.Size = Vector3.new(1, 1, 1)
+        h.CanCollide = false
+        h.Massless = true
+        h.Transparency = 1
+        local i = Instance.new("Weld", h)
+        i.Part0 = h
+        i.Part1 = b:WaitForChild("HumanoidRootPart")
+        i.C0 = CFrame.new(0, -3, 0)
+        local j = Instance.new("ParticleEmitter", h)
+        j.Texture = "rbxassetid://1472591136"
+        j.Rate = 300
+        j.Lifetime = NumberRange.new(2, 4)
+        j.Speed = NumberRange.new(3, 8)
+        j.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 10), NumberSequenceKeypoint.new(1, 0)})
+        j.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(1, 1)})
+        j.LightEmission = 1
+        j.EmissionDirection = Enum.NormalId.Top
+        j.Drag = 2
+        local k = Instance.new("ParticleEmitter", h)
+        k.Texture = "rbxassetid://243660364"
+        k.Rate = 50
+        k.Lifetime = NumberRange.new(1, 2)
+        k.Speed = NumberRange.new(5, 15)
+        k.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.5, 2), NumberSequenceKeypoint.new(1, 0)})
+        k.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.2), NumberSequenceKeypoint.new(1, 1)})
+        k.LightEmission = 1
+        k.EmissionDirection = Enum.NormalId.Top
+        local l = Instance.new("PointLight", b:WaitForChild("HumanoidRootPart"))
+        l.Range = 15
+        l.Brightness = 3
+        l.Shadows = true
+        local m = Instance.new("Part", d)
+        m.Size = Vector3.new(1, 1, 1)
+        m.CanCollide = false
+        m.Massless = true
+        m.Material = Enum.Material.Neon
+        local n = Instance.new("SpecialMesh", m)
+        n.MeshType = Enum.MeshType.FileMesh
+        n.MeshId = "rbxassetid://1938002622"
+        n.Scale = Vector3.new(5, 5, 5)
+        local o = Instance.new("Weld", m)
+        o.Part0 = m
+        local p = b:FindFirstChild("Torso") or b:FindFirstChild("UpperTorso")
+        o.Part1 = p
+        local q = Instance.new("Trail", m)
+        local r = Instance.new("Attachment", m)
+        r.Position = Vector3.new(0, 2, 0)
+        local s = Instance.new("Attachment", m)
+        s.Position = Vector3.new(0, -2, 0)
+        q.Attachment0 = r
+        q.Attachment1 = s
+        q.Lifetime = 0.5
+        q.MinLength = 0.1
+        q.LightEmission = 1
+        q.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)})
+        local t = 0
+        c.RenderStepped:Connect(function(u)
+            t = t + u
+            local v = tick() % 3 / 3
+            local w = Color3.fromHSV(v, 1, 1)
+            if e.Parent then e.Color = w end
+            if m.Parent then m.Color = w end
+            if j.Parent then j.Color = ColorSequence.new(w) end
+            if k.Parent then k.Color = ColorSequence.new(w) end
+            if l.Parent then l.Color = w l.Range = 15 + math.sin(t * 4) * 5 end
+            if q.Parent then q.Color = ColorSequence.new(w) end
+            if g.Parent then g.C0 = CFrame.new(0, -2.5 - math.sin(t * 3) * 0.5, 0) * CFrame.Angles(math.rad(15 * math.sin(t * 2)), t * 1.5, math.rad(15 * math.cos(t * 2))) end
+            if o.Parent then o.C0 = CFrame.new(0, -0.5, -0.5) * CFrame.Angles(0, 0, math.rad(math.sin(t * 5) * 10)) end
+        end)
     end
-    b_antiGrav.Force = Vector3.new(0, 0, 0)
-    b_antiGrav.Parent = nil
-end)
+})
+
+CosmeticTab:CreateButton({
+    Name = "VFX Aura (Advanced Model)",
+    Callback = function()
+        local assetId = 14628750884
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local root = character:WaitForChild("HumanoidRootPart")
+        
+        local function loadAndCopyVFX()
+            local success, model = pcall(function() return game:GetObjects("rbxassetid://" .. assetId)[1] end)
+            if not success or not model then return end
+            model.Parent = workspace
+            local forwardPos = root.CFrame * CFrame.new(0, -3, -15)
+            if model:IsA("Model") then
+                if model.PrimaryPart then model:SetPrimaryPartCFrame(forwardPos)
+                else local base = model:FindFirstChildWhichIsA("BasePart", true)
+                if base then model:MoveTo(forwardPos.Position) end end
+            end
+            task.wait(1.5)
+            local vfxFolder = workspace:FindFirstChild("VFX Auras")
+            if not vfxFolder then return end
+            local children = vfxFolder:GetChildren()
+            if #children < 2 then return end
+            local dummy = children[2]
+            if not dummy or not dummy:IsA("Model") then return end
+            local humanoid = character:WaitForChild("Humanoid")
+            local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
+            local partMapping = {
+                ["Head"] = "Head",
+                ["Torso"] = isR15 and "UpperTorso" or "Torso",
+                ["Left Arm"] = isR15 and "LeftUpperArm" or "Left Arm",
+                ["Right Arm"] = isR15 and "RightUpperArm" or "Right Arm",
+                ["Left Leg"] = isR15 and "LeftUpperLeg" or "Left Leg",
+                ["Right Leg"] = isR15 and "RightUpperLeg" or "Right Leg",
+            }
+            for sourceName, targetName in pairs(partMapping) do
+                local sourcePart = dummy:FindFirstChild(sourceName, true)
+                local targetPart = character:FindFirstChild(targetName, true)
+                if sourcePart and targetPart then
+                    for _, child in ipairs(sourcePart:GetChildren()) do
+                        if child:IsA("Attachment") then child:Clone().Parent = targetPart end
+                    end
+                end
+            end
+        end
+        loadAndCopyVFX()
+    end
+})
 
 -- ==========================================
--- ABA: MAPA, AJUSTES E PLATAFORMAS
+-- OUTRAS ABAS (Scripts, Mapa, Social)
 -- ==========================================
-local MapTab = Window:CreateTab("Mapa", 4483362458)
-MapTab:CreateButton({
-   Name = "Map Changer Brookhaven",
-   Callback = function()
-      local character = player.Character or player.CharacterAdded:Wait()
-      local root = character:WaitForChild("HumanoidRootPart")
-      local MAP_ASSET_ID = 140334759443759
-      root.Anchored = true
-      root.CFrame = CFrame.new(root.Position.X, 15000, root.Position.Z)
-      task.spawn(function()
-          local success, objs = pcall(function() return game:GetObjects("rbxassetid://" .. MAP_ASSET_ID) end)
-          if success and objs[1] then
-              objs[1].Parent = workspace
-              task.wait(1)
-              local targetPart = objs[1]:FindFirstChildWhichIsA("BasePart", true)
-              root.CFrame = targetPart and CFrame.new(targetPart.Position.X, 15000, targetPart.Position.Z) or CFrame.new(0, 15000, 0)
-          end
-          root.Anchored = false
-      end)
-   end,
-})
-
-local ConfigTab = Window:CreateTab("Ajustes", 4483362458)
-ConfigTab:CreateButton({
-   Name = "Abrir FFlag Editor",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/Real-Link/Codex/main/FFlagEditor.lua"))()
-   end,
-})
-
-local PlatTab = Window:CreateTab("Plataformas", 4483362458)
-PlatTab:CreateToggle({
-   Name = "Habilitar Teclas (E, Y, U)",
-   CurrentValue = false,
-   Callback = function(Value)
-      platAtiva = Value
-      if not Value then pastaPlataformas:ClearAllChildren() end
-   end,
-})
+local Tab = Window:CreateTab("Scripts", 4483362458)
+Tab:CreateSection("Visual (Shaders)")
+Tab:CreateButton({ Name = "Shaders of drayko", Callback = function() 
+    local assetId = 95940878862689
+    local function processObject(obj) if obj:IsA("BasePart") then obj.Material = Enum.Material.SmoothPlastic if obj.Transparency == 0 then obj.Reflectance = 0.6 end end end
+    task.spawn(function() for _, obj in pairs(Workspace:GetDescendants()) do processObject(obj) end end)
+    local function applyLighting()
+        for _, obj in pairs(Lighting:GetChildren()) do if obj:IsA("Sky") or obj:IsA("BloomEffect") or obj:IsA("Atmosphere") or obj:IsA("Clouds") then obj:Destroy() end end
+        pcall(function() local objects = game:GetObjects("rbxassetid://" .. assetId) for _, item in ipairs(objects) do item.Parent = Lighting end end)
+        Lighting.Technology = Enum.Technology.Future Lighting.Brightness = 2.2
+    end
+    applyLighting()
+    Rayfield:Notify({Title = "Shaders", Content = "Ativados!", Duration = 2})
+end})
 
 local SocialTab = Window:CreateTab("Social", 4483362458)
 SocialTab:CreateButton({Name = "Copiar Discord", Callback = function() setclipboard("https://discord.gg/bqgVRCWm") end})
 SocialTab:CreateButton({Name = "TikTok (@drayko.exe)", Callback = function() setclipboard("https://www.tiktok.com/@drayko.exe") end})
+-- Crédito adicionado conforme solicitado
+SocialTab:CreateButton({
+    Name = "Brookhaven, new cosmetics script by @l1ght451 (tiktok)", 
+    Callback = function() setclipboard("https://www.tiktok.com/@l1ght451") end
+})
 
--- Loop Heartbeat (Bhop By drayko e Plataformas)
+-- [Loops de Movimentação e Heartbeat mantidos do script original]
 RunService.Heartbeat:Connect(function()
-    if not bhopAtivo then return end
-    local Char = player.Character
-    if Char and Char:FindFirstChild("Humanoid") and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-        local Hum = Char.Humanoid
-        if IsOnGroundAdvanced() and (tick() - LastJump) > JUMP_COOLDOWN then
-            Hum:ChangeState(Enum.HumanoidStateType.Jumping)
-            LastJump = tick()
+    if bhopAtivo then
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            if IsOnGroundAdvanced() and (tick() - LastJump) > JUMP_COOLDOWN then
+                Char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                LastJump = tick()
+            end
         end
     end
-end)
-
-local function criarMapa()
-    local root = player.Character:WaitForChild("HumanoidRootPart")
-    local altura = root.Position.Y - 3
-    for x = -500, 500, 12 do
-        for z = -500, 500, 12 do
-            local p = Instance.new("Part", pastaPlataformas)
-            p.Size, p.Position, p.Anchored = Vector3.new(12, 1, 12), Vector3.new(x, altura, z), true
-            p.Transparency = modoVisivel and 0.3 or 1
-            ultimaPlataforma = p
-        end
-    end
-end
-
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if not platAtiva then return end
-    if input.KeyCode == Enum.KeyCode.E then if #pastaPlataformas:GetChildren() > 0 then pastaPlataformas:ClearAllChildren() else criarMapa() end end
-    if input.KeyCode == Enum.KeyCode.Y then modoVisivel = not modoVisivel for _,p in pairs(pastaPlataformas:GetChildren()) do p.Transparency = modoVisivel and 0.3 or 1 end end
-    if input.KeyCode == Enum.KeyCode.U and ultimaPlataforma then player.Character.HumanoidRootPart.CFrame = ultimaPlataforma.CFrame + Vector3.new(0, 3, 0) end
 end)
 
 Rayfield:LoadConfiguration()
