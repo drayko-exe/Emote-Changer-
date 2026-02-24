@@ -32,7 +32,6 @@ local gravidadeZeroAtiva = false
 local ultimaPlataforma = nil
 local LastJump = 0
 
--- Configurações de Movimentação (By drayko)
 local JUMP_COOLDOWN = 0.15
 local GROUND_CHECK_DISTANCE = 3.5
 local MAX_SLOPE_ANGLE = 45
@@ -82,15 +81,15 @@ CosmeticTab:CreateSection("Personagem")
 CosmeticTab:CreateButton({
    Name = "Universal Avatar Changer",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/darkdexv2/universalavatarchanger/main/avatarchanger"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/darkdexv2/universalavatanger/main/avatarchanger"))()
    end,
 })
 
 CosmeticTab:CreateSection("Efeitos Visuais (Toxic Auras)")
 
--- VERSÃO VERDE SOLICITADA
+-- BOTÃO VERDE
 CosmeticTab:CreateButton({
-    Name = "ToxicAura (Purple Version)",
+    Name = "ToxicAura (Purple version)",
     Callback = function()
         local assetId = 14628750884
         local player = game.Players.LocalPlayer
@@ -108,11 +107,11 @@ CosmeticTab:CreateButton({
                 if base then model:MoveTo(forwardPos.Position) end end
             end
             task.wait(1.5)
-            local vfxFolder = workspace:FindFirstChild("VFX Auras") or workspace:FindFirstChild("VFx") or workspace:FindFirstChild("Effects")
+            local vfxFolder = workspace:FindFirstChild("VFX Auras")
             if not vfxFolder then return end
             
             local children = vfxFolder:GetChildren()
-            local dummy = children[2] -- Lógica específica da versão verde
+            local dummy = children[2] 
             
             if not dummy or not dummy:IsA("Model") then return end
             local humanoid = character:WaitForChild("Humanoid")
@@ -139,9 +138,9 @@ CosmeticTab:CreateButton({
     end
 })
 
--- VERSÃO ROXA (SUBSTITUINDO VFX AURA)
+-- BOTÃO ROXO
 CosmeticTab:CreateButton({
-    Name = "ToxicAura (Green Version)",
+    Name = "ToxicAura (Green version)",
     Callback = function()
         local assetId = 14628750884
         local player = game.Players.LocalPlayer
@@ -163,10 +162,6 @@ CosmeticTab:CreateButton({
             for _, obj in ipairs(workspace:GetDescendants()) do
                 if obj.Name == "Dummy" and obj:IsA("Model") then dummy = obj break end
             end
-            if not dummy then
-                local vfxFolder = workspace:FindFirstChild("VFX Auras") or workspace:FindFirstChild("VFx") or workspace:FindFirstChild("Effects")
-                if vfxFolder then dummy = vfxFolder:FindFirstChild("Dummy") end
-            end
             if not dummy then return end
             local humanoid = character:WaitForChild("Humanoid")
             local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
@@ -186,6 +181,41 @@ CosmeticTab:CreateButton({
             end
         end
         loadAndCopyVFX()
+    end
+})
+
+-- FLASH STRIKE (BY DRAYKO)
+CosmeticTab:CreateButton({
+    Name = "FlashStrike (By drayko)",
+    Callback = function()
+        local assetId = 107791749595680
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local root = character:WaitForChild("HumanoidRootPart")
+
+        local function getVFX()
+            local success, model = pcall(function()
+                return game:GetObjects("rbxassetid://" .. assetId)[1]
+            end)
+
+            if not success or not model then return end
+
+            model.Parent = game.Lighting 
+
+            for _, obj in ipairs(model:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") or obj:IsA("PointLight") then
+                    obj.Parent = root
+                    if obj:IsA("ParticleEmitter") then
+                        obj.Enabled = true
+                        if obj:FindFirstChild("LockedToPart") then obj.LockedToPart = true end
+                    end
+                end
+            end
+
+            model:Destroy()
+            Rayfield:Notify({Title = "FlashStrike", Content = "Efeito FlashStrike ativado! (By drayko)", Duration = 2})
+        end
+        getVFX()
     end
 })
 
@@ -282,7 +312,7 @@ CosmeticTab:CreateButton({
 })
 
 -- ==========================================
--- ABA: SCRIPTS (Visual e Movimentação)
+-- ABA: SCRIPTS
 -- ==========================================
 local Tab = Window:CreateTab("Scripts", 4483362458)
 
