@@ -87,7 +87,7 @@ CosmeticTab:CreateButton({
 
 CosmeticTab:CreateSection("Efeitos Visuais (Toxic Auras)")
 
--- BOTÃO VERDE
+-- BOTÃO VERDE (Original)
 CosmeticTab:CreateButton({
     Name = "ToxicAura (Purple version)",
     Callback = function()
@@ -138,7 +138,7 @@ CosmeticTab:CreateButton({
     end
 })
 
--- BOTÃO ROXO
+-- BOTÃO ROXO (Original)
 CosmeticTab:CreateButton({
     Name = "ToxicAura (Green version)",
     Callback = function()
@@ -184,7 +184,7 @@ CosmeticTab:CreateButton({
     end
 })
 
--- FLASH STRIKE (BY DRAYKO)
+-- FLASH STRIKE (Original)
 CosmeticTab:CreateButton({
     Name = "FlashStrike (By drayko)",
     Callback = function()
@@ -311,6 +311,56 @@ CosmeticTab:CreateButton({
     end
 })
 
+-- SCRIPT 2 INTEGRADO (Renomeado)
+CosmeticTab:CreateButton({
+    Name = "ToxicInferno (Purple Effect)",
+    Callback = function()
+        local success, err = pcall(function()
+            local items = ReplicatedStorage:WaitForChild("Items"):WaitForChild("Cosmetics")
+            local targetFolder = items:FindFirstChild("ToxicInferno") or items:FindFirstChild("PureLove")
+            if targetFolder then targetFolder.Name = "PureLove" end
+            local pureLove = items:WaitForChild("PureLove")
+            local attachment = pureLove:WaitForChild("CharacterClassic"):WaitForChild("Torso"):WaitForChild("Attachment")
+            local particleEmitter = attachment:WaitForChild("ParticleEmitter")
+            particleEmitter.Color = ColorSequence.new(Color3.fromRGB(170, 0, 255))
+            local children = attachment:GetChildren()
+            local targetEffect = children[2]
+            if targetEffect then
+                local darkPurple = Color3.fromRGB(75, 0, 130)
+                if targetEffect:IsA("ParticleEmitter") or targetEffect:IsA("Trail") then targetEffect.Color = ColorSequence.new(darkPurple)
+                elseif targetEffect:IsA("Light") or targetEffect:IsA("Beam") then targetEffect.Color = darkPurple
+                else pcall(function() targetEffect.Color = darkPurple end) end
+            end
+        end)
+        Rayfield:Notify({Title = "ToxicInferno", Content = success and "Efeito Purple Ativado!" or "Erro ao aplicar.", Duration = 2})
+    end
+})
+
+-- SCRIPT 3 INTEGRADO (Renomeado)
+CosmeticTab:CreateButton({
+    Name = "ToxicInferno (Red Effect)",
+    Callback = function()
+        local success, err = pcall(function()
+            local items = ReplicatedStorage:WaitForChild("Items"):WaitForChild("Cosmetics")
+            local targetFolder = items:FindFirstChild("ToxicInferno") or items:FindFirstChild("PureLove")
+            if targetFolder then targetFolder.Name = "PureLove" end
+            local pureLove = items:WaitForChild("PureLove")
+            local attachment = pureLove:WaitForChild("CharacterClassic"):WaitForChild("Torso"):WaitForChild("Attachment")
+            local particleEmitter = attachment:WaitForChild("ParticleEmitter")
+            particleEmitter.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0))
+            local children = attachment:GetChildren()
+            local targetEffect = children[2]
+            if targetEffect then
+                local darkRed = Color3.fromRGB(139, 0, 0)
+                if targetEffect:IsA("ParticleEmitter") or targetEffect:IsA("Trail") then targetEffect.Color = ColorSequence.new(darkRed)
+                elseif targetEffect:IsA("Light") or targetEffect:IsA("Beam") then targetEffect.Color = darkRed
+                else pcall(function() targetEffect.Color = darkRed end) end
+            end
+        end)
+        Rayfield:Notify({Title = "ToxicInferno", Content = success and "Efeito Red Ativado!" or "Erro ao aplicar.", Duration = 2})
+    end
+})
+
 -- ==========================================
 -- ABA: SCRIPTS
 -- ==========================================
@@ -386,16 +436,9 @@ Tab:CreateSection("Movimentação")
 Tab:CreateToggle({ Name = "Bhop (By drayko)", CurrentValue = false, Flag = "BhopToggle", Callback = function(Value) bhopAtivo = Value end })
 Tab:CreateToggle({ Name = "Trimp Assist", CurrentValue = false, Callback = function(Value) gravidadeZeroAtiva = Value end })
 
--- NOVA OPÇÃO ADICIONADA AQUI
 Tab:CreateButton({
     Name = "Alterar Campo de Visão by drayko",
     Callback = function()
-        -- Script FOV Permanente Integrado
-        local Players = game:GetService("Players")
-        local UIS = game:GetService("UserInputService")
-        local RunService = game:GetService("RunService")
-        local player = Players.LocalPlayer
-
         local FORCED_FOV = 90
         local MIN_FOV = 50
         local MAX_FOV = 555
@@ -407,11 +450,8 @@ Tab:CreateButton({
         end
 
         local camera = waitForCamera()
-
         local function forceSetFOV()
-            if camera and camera.FieldOfView ~= FORCED_FOV then
-                camera.FieldOfView = FORCED_FOV
-            end
+            if camera and camera.FieldOfView ~= FORCED_FOV then camera.FieldOfView = FORCED_FOV end
         end
 
         RunService.RenderStepped:Connect(forceSetFOV)
@@ -424,7 +464,6 @@ Tab:CreateButton({
             camera:GetPropertyChangedSignal("FieldOfView"):Connect(forceSetFOV)
         end)
 
-        -- GUI do FOV
         local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
         gui.Name = "FOV_PERMANENTE"
         gui.ResetOnSpawn = false
@@ -508,7 +547,6 @@ Tab:CreateButton({
             end
         end)
 
-        -- Arrastável
         local dragging, startPos, startInputPos
         frame.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
