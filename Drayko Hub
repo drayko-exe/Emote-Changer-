@@ -90,7 +90,7 @@ CosmeticTab:CreateSection("Efeitos Visuais (Toxic Auras)")
 
 -- VERSÃO VERDE SOLICITADA
 CosmeticTab:CreateButton({
-    Name = "ToxicAura (Green version)",
+    Name = "ToxicAura (Purple Version)",
     Callback = function()
         local assetId = 14628750884
         local player = game.Players.LocalPlayer
@@ -141,7 +141,7 @@ CosmeticTab:CreateButton({
 
 -- VERSÃO ROXA (SUBSTITUINDO VFX AURA)
 CosmeticTab:CreateButton({
-    Name = "ToxicAura (Purple version)",
+    Name = "ToxicAura (Green Version)",
     Callback = function()
         local assetId = 14628750884
         local player = game.Players.LocalPlayer
