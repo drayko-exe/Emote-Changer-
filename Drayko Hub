@@ -386,6 +386,180 @@ Tab:CreateSection("Movimentação")
 Tab:CreateToggle({ Name = "Bhop (By drayko)", CurrentValue = false, Flag = "BhopToggle", Callback = function(Value) bhopAtivo = Value end })
 Tab:CreateToggle({ Name = "Trimp Assist", CurrentValue = false, Callback = function(Value) gravidadeZeroAtiva = Value end })
 
+-- NOVO BOTÃO: ALTERAR CAMPO DE VISÃO (BY DRAYKO)
+Tab:CreateButton({
+    Name = "Alterar Campo de Visão (By drayko)",
+    Callback = function()
+        -- FOV PERMANENTE | DELTA EXECUTOR | MOBILE
+        local Players = game:GetService("Players")
+        local UIS = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
+        local player = Players.LocalPlayer
+
+        local FORCED_FOV = 90
+        local MIN_FOV = 50
+        local MAX_FOV = 555
+
+        local function waitForCamera()
+            local cam
+            repeat
+                cam = workspace.CurrentCamera
+                task.wait()
+            until cam
+            return cam
+        end
+
+        local camera = waitForCamera()
+
+        local function forceSetFOV()
+            if camera and camera.FieldOfView ~= FORCED_FOV then
+                camera.FieldOfView = FORCED_FOV
+            end
+        end
+
+        RunService.RenderStepped:Connect(forceSetFOV)
+        camera:GetPropertyChangedSignal("FieldOfView"):Connect(forceSetFOV)
+
+        player.CharacterAdded:Connect(function()
+            task.wait(0.5)
+            camera = waitForCamera()
+            camera.FieldOfView = FORCED_FOV
+            camera:GetPropertyChangedSignal("FieldOfView"):Connect(forceSetFOV)
+        end)
+
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "FOV_PERMANENTE"
+        gui.ResetOnSpawn = false
+        gui.Parent = player:WaitForChild("PlayerGui")
+
+        local frame = Instance.new("Frame", gui)
+        frame.Size = UDim2.new(0, 260, 0, 220)
+        frame.Position = UDim2.new(0.5, -130, 0.65, 0)
+        frame.BackgroundColor3 = Color3.fromRGB(18,18,18)
+        frame.BorderSizePixel = 0
+        frame.Active = true
+        frame.BackgroundTransparency = 1
+        frame.ClipsDescendants = true
+        Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+        local TweenService = game:GetService("TweenService")
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local openTween = TweenService:Create(frame, tweenInfo, {BackgroundTransparency = 0, Size = UDim2.new(0, 260, 0, 220)})
+        frame.Size = UDim2.new(0, 0, 0, 0)
+        task.wait(0.1)
+        openTween:Play()
+
+        local topBar = Instance.new("Frame", frame)
+        topBar.Size = UDim2.new(1,0,0,35)
+        topBar.BackgroundColor3 = Color3.fromRGB(28,28,28)
+        topBar.BorderSizePixel = 0
+        Instance.new("UICorner", topBar).CornerRadius = UDim.new(0,12)
+
+        local title = Instance.new("TextLabel", topBar)
+        title.Size = UDim2.new(1,-80,1,0)
+        title.Position = UDim2.new(0,12,0,0)
+        title.BackgroundTransparency = 1
+        title.Text = "🎯 FOV PERMANENTE"
+        title.TextColor3 = Color3.fromRGB(120,220,255)
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = 14
+        title.TextXAlignment = Enum.TextXAlignment.Left
+
+        local status = Instance.new("TextLabel", topBar)
+        status.Size = UDim2.new(0,60,0,20)
+        status.Position = UDim2.new(1,-70,0.5,-10)
+        status.BackgroundColor3 = Color3.fromRGB(50,200,100)
+        status.Text = "ATIVO"
+        status.TextColor3 = Color3.new(1,1,1)
+        status.Font = Enum.Font.GothamBold
+        status.TextSize = 11
+        Instance.new("UICorner", status).CornerRadius = UDim.new(0,6)
+
+        local container = Instance.new("Frame", frame)
+        container.Size = UDim2.new(1,-24,1,-47)
+        container.Position = UDim2.new(0,12,0,41)
+        container.BackgroundTransparency = 1
+
+        local fovLabel = Instance.new("TextLabel", container)
+        fovLabel.Size = UDim2.new(1,0,0,30)
+        fovLabel.BackgroundTransparency = 1
+        fovLabel.Text = "FOV: " .. FORCED_FOV
+        fovLabel.TextColor3 = Color3.new(1,1,1)
+        fovLabel.Font = Enum.Font.GothamBold
+        fovLabel.TextSize = 16
+
+        local box = Instance.new("TextBox", container)
+        box.Size = UDim2.new(1,0,0,40)
+        box.Position = UDim2.new(0,0,0,35)
+        box.PlaceholderText = "Digite FOV (50 - 555)"
+        box.Text = tostring(FORCED_FOV)
+        box.BackgroundColor3 = Color3.fromRGB(35,35,35)
+        box.TextColor3 = Color3.new(1,1,1)
+        box.Font = Enum.Font.Gotham
+        box.TextSize = 15
+        Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
+
+        local presetFrame1 = Instance.new("Frame", container)
+        presetFrame1.Size = UDim2.new(1,0,0,35)
+        presetFrame1.Position = UDim2.new(0,0,0,85)
+        presetFrame1.BackgroundTransparency = 1
+
+        local presets1 = {{text = "70", value = 70}, {text = "90", value = 90}, {text = "120", value = 120}, {text = "180", value = 180}}
+        for i, preset in ipairs(presets1) do
+            local btn = Instance.new("TextButton", presetFrame1)
+            btn.Size = UDim2.new(0.23,0,1,0)
+            btn.Position = UDim2.new((i-1)*0.257,0,0,0)
+            btn.Text = preset.text
+            btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+            btn.TextColor3 = Color3.new(1,1,1)
+            btn.Font = Enum.Font.GothamBold
+            btn.TextSize = 14
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+            btn.MouseButton1Click:Connect(function()
+                FORCED_FOV = preset.value
+                camera.FieldOfView = FORCED_FOV
+                box.Text = tostring(FORCED_FOV)
+                fovLabel.Text = "FOV: " .. FORCED_FOV
+            end)
+        end
+
+        box.FocusLost:Connect(function()
+            local value = tonumber(box.Text)
+            if value and value >= MIN_FOV and value <= MAX_FOV then
+                FORCED_FOV = value
+                camera.FieldOfView = FORCED_FOV
+                fovLabel.Text = "FOV: " .. FORCED_FOV
+            else
+                box.Text = tostring(FORCED_FOV)
+            end
+        end)
+
+        local function makeDraggable(obj)
+            local dragging, startPos, startInputPos
+            obj.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                    startInputPos = input.Position
+                    startPos = obj.Position
+                end
+            end)
+            UIS.InputChanged:Connect(function(input)
+                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local delta = input.Position - startInputPos
+                    obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                end
+            end)
+            UIS.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+        end
+        makeDraggable(frame)
+        Rayfield:Notify({Title = "FOV", Content = "Script de FOV Permanente carregado! (By drayko)", Duration = 2})
+    end
+})
+
 Tab:CreateSection("Emotes")
 Tab:CreateToggle({
    Name = "Renomear Emotes",
